@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { loadState, saveState } from "../domain/persistence";
 import { atpBalance, canDivide, normalizeForToday } from "../domain/rules";
+import { resolveSkinSelection, type CellSkinId, type SkinSelection } from "../domain/skins";
 import { completeCell, divideDay, exchangeCell, setCellTitle } from "../domain/transitions";
 import type { CellState, DaySession, ExchangeType } from "../domain/types";
 
@@ -28,10 +29,18 @@ export function useCellStore() {
   const day = useMemo(() => state.days.find((item) => item.date === state.currentDate)!, [state]);
   const latest = day.generations.at(-1);
   const mutateDay = useCallback((mutate: (day: DaySession) => DaySession) => setState((current) => updateToday(current, mutate)), []);
-  const divide = useCallback(() => mutateDay(divideDay), [mutateDay]);
+  const divide = useCallback((skinId?: CellSkinId) => setState((current) => updateToday(current, (activeDay) => divideDay(activeDay, skinId ?? resolveSkinSelection(current.preferences.selectedSkinId)))), []);
+  const setSkin = useCallback((selection: SkinSelection) => setState((current) => {
+    const previewSkinId = resolveSkinSelection(selection);
+    return {
+      ...current,
+      preferences: { ...current.preferences, selectedSkinId: selection },
+      days: current.days.map((item) => item.date === current.currentDate && item.generations.length === 0 ? { ...item, skinId: previewSkinId } : item),
+    };
+  }), []);
   const updateTitle = useCallback((cellId: string, title: string) => mutateDay((activeDay) => setCellTitle(activeDay, cellId, title)), [mutateDay]);
   const complete = useCallback((cellId: string) => mutateDay((activeDay) => completeCell(activeDay, cellId)), [mutateDay]);
   const exchange = useCallback((cellId: string, type: ExchangeType, replacement?: string) => mutateDay((activeDay) => exchangeCell(activeDay, cellId, type, replacement)), [mutateDay]);
 
-  return { state, day, latest, hydrated, atp: atpBalance(day), divide, updateTitle, complete, exchange, canDivide: canDivide(latest) };
+  return { state, day, latest, hydrated, atp: atpBalance(day), selectedSkinId: state.preferences.selectedSkinId, divide, setSkin, updateTitle, complete, exchange, canDivide: canDivide(latest) };
 }

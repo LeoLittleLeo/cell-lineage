@@ -20,12 +20,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const base = new URL(`${protocol}://${host}`);
   const title = "Cell · 让承诺生长";
   const description = "以细胞分裂为隐喻的个人事务管理程序。";
-  const socialImage = new URL("/og.png", base).toString();
+  const socialImage = new URL("/og-skins.png", base).toString();
   return {
     metadataBase: base,
     title,
     description,
-    openGraph: { title, description, type: "website", images: [{ url: socialImage, width: 1731, height: 909, alt: "Cell — 让承诺生长" }] },
+    openGraph: { title, description, type: "website", images: [{ url: socialImage, width: 1731, height: 909, alt: "Cell — 六种生命形态，让承诺生长" }] },
     twitter: { card: "summary_large_image", title, description, images: [socialImage] },
   };
 }

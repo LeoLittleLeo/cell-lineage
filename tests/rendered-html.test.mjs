@@ -19,5 +19,7 @@ test("server-renders the Cell day surface", async () => {
   assert.match(html, /今天尚未分裂/);
   assert.match(html, /触碰以开始分裂/);
   assert.match(html, /ATP/);
+  assert.match(html, /CELL SKIN/);
+  assert.match(html, /og-skins\.png/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Your site is taking shape/);
 });

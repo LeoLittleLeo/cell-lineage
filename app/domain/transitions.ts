@@ -1,5 +1,6 @@
 import { ATP_COST_DEFER, ATP_REWARD_COMPLETE, ATP_REWARD_SWAP } from "./config";
 import { atpBalance, canDivide, createGeneration, now, uid } from "./rules";
+import type { CellSkinId } from "./skins";
 import type { DaySession, ExchangeType, TaskCellModel } from "./types";
 
 export function settleGeneration(day: DaySession): DaySession {
@@ -11,10 +12,10 @@ export function settleGeneration(day: DaySession): DaySession {
   return { ...day, generations, status: latest && canDivide(latest) ? "matured" : "active" };
 }
 
-export function divideDay(day: DaySession): DaySession {
+export function divideDay(day: DaySession, skinId: CellSkinId = day.skinId): DaySession {
   const parent = day.generations.at(-1);
   if (parent && !canDivide(parent)) return day;
-  return { ...day, generations: [...day.generations, createGeneration(day.generations.length + 1, parent?.cells)], status: "active" };
+  return { ...day, generations: [...day.generations, createGeneration(day.generations.length + 1, parent?.cells, skinId)], status: "active" };
 }
 
 export function setCellTitle(day: DaySession, cellId: string, title: string): DaySession {

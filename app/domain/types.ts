@@ -1,3 +1,5 @@
+import type { CellSkinId, SkinSelection } from "./skins";
+
 export type CellStatus = "idle" | "active" | "completed" | "exchanged" | "dormant";
 export type ResolutionType = "completed" | "minimum_action" | "equivalent_swap" | "atp_defer" | null;
 export type ExchangeType = Exclude<ResolutionType, "completed" | null>;
@@ -23,6 +25,7 @@ export interface TaskCellModel {
   resolutionType: ResolutionType;
   exchangeHistory: ExchangeRecord[];
   atpRewardGranted: boolean;
+  skinId: CellSkinId;
 }
 
 export interface GenerationModel {
@@ -31,6 +34,7 @@ export interface GenerationModel {
   cells: [TaskCellModel, TaskCellModel];
   createdAt: string;
   maturedAt: string | null;
+  skinId: CellSkinId;
 }
 
 export interface DaySession {
@@ -42,10 +46,16 @@ export interface DaySession {
   atpEarned: number;
   atpSpent: number;
   status: "unstarted" | "active" | "matured";
+  skinId: CellSkinId;
+}
+
+export interface UserPreferences {
+  selectedSkinId: SkinSelection;
 }
 
 export interface CellState {
   version: 1;
   currentDate: string;
   days: DaySession[];
+  preferences: UserPreferences;
 }

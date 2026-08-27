@@ -16,7 +16,7 @@ export function TaskCell({ cell, label, onTitle, onComplete, onExchange }: Props
   return (
     <article className={`task-cell-wrap ${resolved ? "is-resolved" : ""}`}>
       <span className="cell-index">{label}</span>
-      <Cell className={`task-cell task-cell--${cell.status}`}>
+      <Cell className={`task-cell task-cell--${cell.status}`} skinId={cell.skinId}>
         {resolved ? (
           <div className="resolved-cell-copy">
             <span className="mature-mark" aria-hidden="true">{cell.status === "dormant" ? "◐" : "✓"}</span>

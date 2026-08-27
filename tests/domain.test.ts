@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { atpBalance, canDivide, createDay } from "../app/domain/rules";
+import { atpBalance, canDivide, createDay, normalizeForToday } from "../app/domain/rules";
+import { CELL_SKINS, resolveSkinSelection } from "../app/domain/skins";
 import { completeCell, divideDay, exchangeCell, setCellTitle } from "../app/domain/transitions";
+import type { CellState } from "../app/domain/types";
 
 function dayWithTitles(atpStart = 2) {
   let day = divideDay(createDay("2026-08-27", atpStart));
@@ -87,4 +89,49 @@ test("empty titles and completed cells cannot bypass rules", () => {
   const afterComplete = exchangeCell(day, cell.id, "minimum_action", "做一分钟");
   assert.equal(afterComplete.generations[0].cells[0].currentTitle, "真实承诺");
   assert.equal(afterComplete.generations[0].cells[0].exchangeHistory.length, 0);
+});
+
+test("all six cell skins are available and random resolves to an owned skin", () => {
+  assert.deepEqual(CELL_SKINS.map((skin) => skin.id), ["cell", "jelly", "petri", "yolk", "ink", "moss"]);
+  assert.equal(resolveSkinSelection("random", () => 0), "cell");
+  assert.equal(resolveSkinSelection("random", () => 0.999), "moss");
+});
+
+test("each generation records one skin without changing older lineage", () => {
+  let day = divideDay(createDay("2026-08-27"), "jelly");
+  const [a, b] = day.generations[0].cells;
+  day = setCellTitle(day, a.id, "A");
+  day = setCellTitle(day, b.id, "B");
+  day = completeCell(day, a.id);
+  day = completeCell(day, b.id);
+  day = divideDay(day, "ink");
+
+  assert.equal(day.generations[0].skinId, "jelly");
+  assert.ok(day.generations[0].cells.every((cell) => cell.skinId === "jelly"));
+  assert.equal(day.generations[1].skinId, "ink");
+  assert.ok(day.generations[1].cells.every((cell) => cell.skinId === "ink"));
+});
+
+test("legacy local data is migrated to the default skin without losing tasks", () => {
+  const date = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+  const legacyDay = divideDay(createDay(date));
+  const legacy = {
+    version: 1,
+    currentDate: date,
+    days: [{
+      ...legacyDay,
+      skinId: undefined,
+      generations: legacyDay.generations.map((generation) => ({
+        ...generation,
+        skinId: undefined,
+        cells: generation.cells.map((cell) => ({ ...cell, skinId: undefined })),
+      })),
+    }],
+  } as unknown as CellState;
+
+  const migrated = normalizeForToday(legacy);
+  assert.equal(migrated.preferences.selectedSkinId, "cell");
+  assert.equal(migrated.days[0].skinId, "cell");
+  assert.equal(migrated.days[0].generations[0].cells.length, 2);
+  assert.ok(migrated.days[0].generations[0].cells.every((cell) => cell.skinId === "cell"));
 });
