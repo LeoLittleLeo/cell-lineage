@@ -9,6 +9,7 @@ import { ATPIndicator } from "./ATPIndicator";
 import { Cell } from "./Cell";
 import { DayCell } from "./DayCell";
 import { DayComplete } from "./DayComplete";
+import { DesktopPet } from "./DesktopPet";
 import { DivisionStage } from "./DivisionStage";
 import { Lineage } from "./Lineage";
 import { MissingDNA } from "./MissingDNA";
@@ -55,7 +56,9 @@ export function CellApp() {
   const archive = useMemo(() => store.state.days.filter((day) => day.date !== store.state.currentDate), [store.state]);
   const dormantCount = store.state.days.reduce((count, day) => count + day.dormantTasks.length, 0);
   const activeSkinId = store.latest?.skinId ?? store.day.skinId;
-  const selectedSkinName = store.selectedSkinId === "random" ? "Random" : getCellSkin(store.selectedSkinId).name;
+  const activeCell = store.latest?.cells.find((cell) => cell.status === "active");
+  const selectedSkinName = store.selectedSkinId === "random" ? "随机" : getCellSkin(store.selectedSkinId).name;
+  const petStatus = store.day.status === "completed" ? "今日完成" : store.day.status === "missing_dna" ? "等待形成" : store.day.status === "unstarted" ? "尚未开始" : store.canDivide ? "可以分裂" : "生长中";
 
   const stage = isDividing && divisionSkinId ? <DivisionStage generation={generationNumber} skinId={divisionSkinId} />
     : store.day.status === "completed" ? <DayComplete total={store.totalTasks} mutations={store.day.mutationCount} skinId={activeSkinId} onPrepare={() => setPlanMode("tomorrow")} />
@@ -63,23 +66,24 @@ export function CellApp() {
     : !store.latest ? <DayCell onDivide={startDivision} skinId={store.day.skinId} taskCount={store.remainingQueued} />
     : <section className="generation-stage" aria-labelledby="generation-heading">
         <div className="generation-heading">
-          <p className="eyebrow">GENERATION {String(store.latest.index).padStart(2, "0")}</p>
+          <p className="eyebrow">第 {String(store.latest.index).padStart(2, "0")} 代</p>
           <h1 id="generation-heading">{store.canDivide ? (store.remainingQueued ? "这一代已经成熟" : "最后一组承诺已经成熟") : "承诺正在生长"}</h1>
           <p className="maturity-count"><strong>{resolvedCount} / {latestCount}</strong> 个细胞已解决 · 今日 {store.resolvedTasks} / {store.totalTasks}</p>
         </div>
         <div className={`task-cell-grid ${latestCount === 1 ? "task-cell-grid--single" : ""}`}>
-          {store.latest.cells.map((cell, index) => <TaskCell key={cell.id} cell={cell} label={`CELL ${index === 0 ? "A" : "B"}`} onTitle={(title) => store.updateTitle(cell.id, title)} onComplete={() => store.complete(cell.id)} onMutation={() => setMutationCell(cell)} onTimer={() => store.toggleTimer(cell.id)} onSubtask={(subtaskId) => store.toggleSubtask(cell.id, subtaskId)} onDivide={startDivision} divisionAvailable={store.canDivide && store.remainingQueued > 0} />)}
+          {store.latest.cells.map((cell, index) => <TaskCell key={cell.id} cell={cell} label={`细胞 ${index === 0 ? "甲" : "乙"}`} onTitle={(title) => store.updateTitle(cell.id, title)} onComplete={() => store.complete(cell.id)} onMutation={() => setMutationCell(cell)} onTimer={() => store.toggleTimer(cell.id)} onSubtask={(subtaskId) => store.toggleSubtask(cell.id, subtaskId)} onDivide={startDivision} divisionAvailable={store.canDivide && store.remainingQueued > 0} />)}
         </div>
-        <div className="generation-gate">{!store.canDivide && <p className="division-locked">DIVISION LOCKED · 先解决当前细胞</p>}</div>
+        <div className="generation-gate">{!store.canDivide && <p className="division-locked">分裂尚未激活 · 先解决当前细胞</p>}</div>
       </section>;
 
   return <main className="cell-app">
     <header className="quiet-header">
-      <div><span className="wordmark">CELL</span><span className="wordmark-sub">让承诺生长</span></div>
+      <div><span className="wordmark">细胞</span><span className="wordmark-sub">让承诺生长</span></div>
       <div className="header-controls">
-        <button className="dna-trigger" type="button" onClick={() => setPlanMode("tomorrow")}><small>TOMORROW DNA</small><strong>{store.tomorrowPlan?.status === "sealed" ? "SEALED" : `${store.tomorrowPlan?.tasks.filter((task) => task.title.trim()).length ?? 0} TASKS`}</strong></button>
-        <span className="mutation-token-indicator" title="本周剩余 Mutation"><strong>{store.mutationTokens}</strong><small>MUT</small></span>
-        <button className="skin-trigger" type="button" onClick={() => setSkinPickerOpen(true)} aria-haspopup="dialog" aria-expanded={skinPickerOpen}><Cell skinId={activeSkinId} className="skin-trigger-cell" /><span><small>CELL SKIN</small><strong>{selectedSkinName}</strong></span></button>
+        <DesktopPet snapshot={{ title: activeCell?.currentTitle ?? (store.day.status === "completed" ? "今天的承诺已经成熟" : "等待今日细胞"), minutes: activeCell?.remainingMinutes, status: petStatus, skinId: activeCell?.skinId ?? activeSkinId }} onComplete={activeCell ? () => store.complete(activeCell.id) : undefined} onTimer={activeCell?.estimatedMinutes ? () => store.toggleTimer(activeCell.id) : undefined} />
+        <button className="dna-trigger" type="button" onClick={() => setPlanMode("tomorrow")}><small>明日基因</small><strong>{store.tomorrowPlan?.status === "sealed" ? "已封存" : `${store.tomorrowPlan?.tasks.filter((task) => task.title.trim()).length ?? 0} 个事项`}</strong></button>
+        <span className="mutation-token-indicator" title="本周剩余突变次数"><strong>{store.mutationTokens}</strong><small>突变</small></span>
+        <button className="skin-trigger" type="button" onClick={() => setSkinPickerOpen(true)} aria-haspopup="dialog" aria-expanded={skinPickerOpen}><Cell skinId={activeSkinId} className="skin-trigger-cell" /><span><small>细胞皮肤</small><strong>{selectedSkinName}</strong></span></button>
         <ATPIndicator value={store.atp} />
       </div>
     </header>

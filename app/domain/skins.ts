@@ -20,7 +20,7 @@ export interface CellSkin {
 
 export const CELL_SKINS: readonly CellSkin[] = [
   {
-    id: "cell", name: "Cell", description: "安静、柔和，保持今天的完整感。",
+    id: "cell", name: "原生", description: "安静、柔和，保持今天的完整感。",
     membraneStyle: "translucent soft membrane", cytoplasmStyle: "warm milky fluid", nucleusStyle: "diffuse central nucleus",
     motionPreset: { duration: 5800, scale: 1.015, squash: 1 }, divisionPreset: { duration: 1320, stretch: 1, wobble: 0.08, elasticity: 0.35 },
     variables: {
@@ -35,7 +35,7 @@ export const CELL_SKINS: readonly CellSkin[] = [
     }, source: "core",
   },
   {
-    id: "jelly", name: "Jelly", description: "透明、缓慢，像凝胶一样回应呼吸。",
+    id: "jelly", name: "凝胶", description: "透明、缓慢，像凝胶一样回应呼吸。",
     membraneStyle: "thick refractive gel", cytoplasmStyle: "clear viscous fluid", nucleusStyle: "blurred floating nucleus",
     motionPreset: { duration: 4700, scale: 1.025, squash: 0.975 }, divisionPreset: { duration: 1320, stretch: 1.12, wobble: 0.18, elasticity: 0.7 },
     variables: {
@@ -50,7 +50,7 @@ export const CELL_SKINS: readonly CellSkin[] = [
     }, source: "core",
   },
   {
-    id: "petri", name: "Petri", description: "细腻、克制，像培养皿中的微观生命。",
+    id: "petri", name: "培养皿", description: "细腻、克制，像培养皿中的微观生命。",
     membraneStyle: "hairline microscope membrane", cytoplasmStyle: "fine translucent grain", nucleusStyle: "small precise nucleus",
     motionPreset: { duration: 7200, scale: 1.008, squash: 1 }, divisionPreset: { duration: 1320, stretch: 0.94, wobble: 0.03, elasticity: 0.15 },
     variables: {
@@ -65,7 +65,7 @@ export const CELL_SKINS: readonly CellSkin[] = [
     }, source: "core",
   },
   {
-    id: "yolk", name: "Yolk", description: "温暖、饱满，保留初生组织的生命感。",
+    id: "yolk", name: "卵黄", description: "温暖、饱满，保留初生组织的生命感。",
     membraneStyle: "supple rounded membrane", cytoplasmStyle: "warm amber body", nucleusStyle: "prominent glowing nucleus",
     motionPreset: { duration: 5400, scale: 1.018, squash: 0.99 }, divisionPreset: { duration: 1320, stretch: 1.02, wobble: 0.1, elasticity: 0.48 },
     variables: {
@@ -80,7 +80,7 @@ export const CELL_SKINS: readonly CellSkin[] = [
     }, source: "core",
   },
   {
-    id: "ink", name: "Ink", description: "沉静、流动，像一滴墨在水中展开。",
+    id: "ink", name: "水墨", description: "沉静、流动，像一滴墨在水中展开。",
     membraneStyle: "diffused ink edge", cytoplasmStyle: "smoky off-black wash", nucleusStyle: "irregular dark bloom",
     motionPreset: { duration: 6400, scale: 1.014, squash: 0.994 }, divisionPreset: { duration: 1320, stretch: 1.07, wobble: 0.22, elasticity: 0.42 },
     variables: {
@@ -95,7 +95,7 @@ export const CELL_SKINS: readonly CellSkin[] = [
     }, source: "core",
   },
   {
-    id: "moss", name: "Moss", description: "缓慢、坚韧，像苔藓一样安静地生长。",
+    id: "moss", name: "苔藓", description: "缓慢、坚韧，像苔藓一样安静地生长。",
     membraneStyle: "thick earthy tissue", cytoplasmStyle: "mottled vegetal body", nucleusStyle: "organic tissue cluster",
     motionPreset: { duration: 8200, scale: 1.01, squash: 1 }, divisionPreset: { duration: 1320, stretch: 0.98, wobble: 0.07, elasticity: 0.24 },
     variables: {

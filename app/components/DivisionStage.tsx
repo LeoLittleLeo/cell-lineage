@@ -11,7 +11,7 @@ export function DivisionStage({ generation, skinId }: { generation: number; skin
         <span className="mitosis__nucleus mitosis__nucleus--b" />
         <span className="mitosis__furrow" />
       </div>
-      <p className="division-stage__caption">GENERATION {String(generation).padStart(2, "0")}</p>
+      <p className="division-stage__caption">第 {String(generation).padStart(2, "0")} 代</p>
     </section>
   );
 }

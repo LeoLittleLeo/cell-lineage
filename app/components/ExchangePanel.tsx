@@ -34,19 +34,19 @@ export function ExchangePanel({ cell, atp, onClose, onExchange }: Props) {
     <div className="exchange-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="exchange-panel" role="dialog" aria-modal="true" aria-labelledby="exchange-title">
         <button ref={closeRef} className="exchange-close" type="button" onClick={onClose} aria-label="关闭交换面板">×</button>
-        <span className="panel-kicker">EXCHANGE / 重新协商</span>
+        <span className="panel-kicker">重新协商</span>
         <h2 id="exchange-title">你可以改变承诺，<br />但不能让它凭空消失。</h2>
         <p className="exchange-origin">当前承诺 <strong>{cell.currentTitle}</strong></p>
 
         <div className="exchange-options">
           <button className={choice === "minimum_action" ? "is-selected" : ""} type="button" onClick={() => setChoice("minimum_action")}>
-            <span className="option-code">A</span><span><strong>最小行动</strong><small>缩小它，然后亲手完成。完成后 +0 ATP。</small></span>
+            <span className="option-code">甲</span><span><strong>最小行动</strong><small>缩小它，然后亲手完成。完成后不增加能量。</small></span>
           </button>
           <button className={choice === "equivalent_swap" ? "is-selected" : ""} type="button" onClick={() => setChoice("equivalent_swap")}>
-            <span className="option-code">B</span><span><strong>等价交换</strong><small>换成另一件真实事务，仍需完成。</small></span>
+            <span className="option-code">乙</span><span><strong>等价交换</strong><small>换成另一件真实事务，仍需完成。</small></span>
           </button>
           <button className={choice === "atp_defer" ? "is-selected" : ""} type="button" onClick={() => setChoice("atp_defer")} disabled={atp < ATP_COST_DEFER}>
-            <span className="option-code">C</span><span><strong>ATP 休眠</strong><small>消耗 {ATP_COST_DEFER} ATP，原承诺进入休眠区。{atp < ATP_COST_DEFER ? ` 当前仅 ${atp} ATP。` : ""}</small></span>
+            <span className="option-code">丙</span><span><strong>能量休眠</strong><small>消耗 {ATP_COST_DEFER} 点能量，原承诺进入休眠区。{atp < ATP_COST_DEFER ? ` 当前仅有 ${atp} 点能量。` : ""}</small></span>
           </button>
         </div>
 

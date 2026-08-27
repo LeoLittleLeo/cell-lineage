@@ -43,26 +43,26 @@ export function TaskCell({ cell, label, onTitle, onComplete, onMutation, onTimer
       <div className="functional-organelles" style={organelleStyle}>
         <button className="organelle nucleus-control" type="button" onClick={() => setDetailOpen((open) => !open)} aria-expanded={detailOpen} aria-label="查看当前事项详情">
           {!cell.sourceTaskId ? <textarea value={cell.currentTitle} onChange={(event) => onTitle(event.target.value)} maxLength={80} rows={2} placeholder="当前事项" /> : <strong>{cell.currentTitle}</strong>}
-          <small>NUCLEUS · TASK</small>
+          <small>细胞核 · 当前事项</small>
         </button>
 
         {visual.mitochondriaCount > 0 && <button className={`organelle mitochondria ${cell.timerEndsAt ? "is-running" : ""}`} type="button" onClick={onTimer} aria-label={cell.timerEndsAt ? "暂停计时" : "开始计时"}>
           {Array.from({ length: visual.mitochondriaCount }, (_, index) => <i key={index} />)}
-          <span>{remaining ?? cell.estimatedMinutes} MIN<small>{cell.timerEndsAt ? "LEFT" : "ENERGY"}</small></span>
+          <span>{remaining ?? cell.estimatedMinutes} 分钟<small>{cell.timerEndsAt ? "剩余" : "时间"}</small></span>
         </button>}
 
-        {!resolved && <button className="organelle lysosome" type="button" onClick={onMutation} aria-label="通过溶酶体进行 Mutation"><i /><span>LYSOSOME<small>MUTATION</small></span></button>}
+        {!resolved && <button className="organelle lysosome" type="button" onClick={onMutation} aria-label="通过溶酶体进行突变"><i /><span>溶酶体<small>突变</small></span></button>}
 
         {(cell.subtasks?.length ?? 0) > 0 && <div className="ribosomes" aria-label="子任务核糖体">
           {cell.subtasks!.map((subtask, index) => <button className={subtask.completed ? "is-complete" : ""} key={subtask.id} type="button" onClick={() => onSubtask(subtask.id)} title={subtask.title} aria-label={`${subtask.completed ? "恢复" : "完成"}子任务：${subtask.title}`}>{index + 1}</button>)}
         </div>}
 
-        {!resolved && <button className="membrane-seal" type="button" onClick={onComplete}><span />SEAL MEMBRANE</button>}
-        {resolved && <button className={`organelle centrosome ${divisionAvailable ? "is-ready" : "is-locked"}`} type="button" onClick={onDivide} disabled={!divisionAvailable} aria-label={divisionAvailable ? "中心体已激活，进入下一组事项" : "中心体尚未激活"}><i /><i /><span>{divisionAvailable ? "DIVIDE" : "STABLE"}</span></button>}
+        {!resolved && <button className="membrane-seal" type="button" onClick={onComplete}><span />封存细胞膜</button>}
+        {resolved && <button className={`organelle centrosome ${divisionAvailable ? "is-ready" : "is-locked"}`} type="button" onClick={onDivide} disabled={!divisionAvailable} aria-label={divisionAvailable ? "中心体已激活，进入下一组事项" : "中心体尚未激活"}><i /><i /><span>{divisionAvailable ? "开始分裂" : "已稳定"}</span></button>}
 
-        {detailOpen && <div className="nucleus-detail" role="status"><strong>{cell.currentTitle}</strong>{cell.description && <p>{cell.description}</p>}<span>WEIGHT {cell.weight} · ENERGY {cell.energy ?? 3}</span></div>}
+        {detailOpen && <div className="nucleus-detail" role="status"><strong>{cell.currentTitle}</strong>{cell.description && <p>{cell.description}</p>}<span>权重 {cell.weight} · 精力 {cell.energy ?? 3}</span></div>}
       </div>
     </Cell>
-    <p className="organelle-legend">NUCLEUS TASK · MITO TIME · LYSOSOME CHANGE</p>
+    <p className="organelle-legend">细胞核：事项 · 线粒体：时间 · 溶酶体：改变</p>
   </article>;
 }

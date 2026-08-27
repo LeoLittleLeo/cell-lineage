@@ -12,7 +12,7 @@ export function DayCell({ onDivide, skinId, taskCount }: { onDivide: () => void;
         <span className="day-cell__nucleus" aria-hidden="true" />
         <span className="day-cell__date"><strong>{parts.day}</strong><span>{parts.month?.toUpperCase()}</span></span>
         <span className="day-cell__weekday">{parts.weekday?.toUpperCase()}</span>
-        <span className="day-cell__task-count">{taskCount} {taskCount === 1 ? "TASK" : "TASKS"} · DNA SEALED</span>
+        <span className="day-cell__task-count">{taskCount} 个事项 · 基因已封存</span>
         <span className="day-cell__prompt">触碰以释放第一组承诺</span>
       </button>
       <p className="day-note">昨天的计划，已经被写进今天。</p>
