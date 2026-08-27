@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { getCellSkin, type CellSkinId } from "../domain/skins";
 
-export function DayCell({ onDivide, skinId }: { onDivide: () => void; skinId: CellSkinId }) {
+export function DayCell({ onDivide, skinId, taskCount }: { onDivide: () => void; skinId: CellSkinId; taskCount: number }) {
   const parts = new Intl.DateTimeFormat("en-US", { day: "2-digit", month: "short", weekday: "long" })
     .formatToParts(new Date()).reduce<Record<string, string>>((all, part) => ({ ...all, [part.type]: part.value }), {});
 
@@ -12,9 +12,10 @@ export function DayCell({ onDivide, skinId }: { onDivide: () => void; skinId: Ce
         <span className="day-cell__nucleus" aria-hidden="true" />
         <span className="day-cell__date"><strong>{parts.day}</strong><span>{parts.month?.toUpperCase()}</span></span>
         <span className="day-cell__weekday">{parts.weekday?.toUpperCase()}</span>
-        <span className="day-cell__prompt">触碰以开始分裂</span>
+        <span className="day-cell__task-count">{taskCount} {taskCount === 1 ? "TASK" : "TASKS"} · DNA SEALED</span>
+        <span className="day-cell__prompt">触碰以释放第一组承诺</span>
       </button>
-      <p className="day-note">今天还是完整的。</p>
+      <p className="day-note">昨天的计划，已经被写进今天。</p>
     </section>
   );
 }

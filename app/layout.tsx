@@ -19,13 +19,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const base = new URL(`${protocol}://${host}`);
   const title = "Cell · 让承诺生长";
-  const description = "以细胞分裂为隐喻的个人事务管理程序。";
-  const socialImage = new URL("/og-skins.png", base).toString();
+  const description = "昨天写入 DNA，今天在细胞器中执行承诺。";
+  const socialImage = new URL("/og-dna.png", base).toString();
   return {
     metadataBase: base,
     title,
     description,
-    openGraph: { title, description, type: "website", images: [{ url: socialImage, width: 1731, height: 909, alt: "Cell — 六种生命形态，让承诺生长" }] },
+    openGraph: { title, description, type: "website", images: [{ url: socialImage, width: 1727, height: 911, alt: "Cell — 从 Tomorrow DNA 到细胞分裂" }] },
     twitter: { card: "summary_large_image", title, description, images: [socialImage] },
   };
 }

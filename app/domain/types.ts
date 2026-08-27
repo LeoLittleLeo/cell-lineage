@@ -1,24 +1,67 @@
 import type { CellSkinId, SkinSelection } from "./skins";
 
-export type CellStatus = "idle" | "active" | "completed" | "exchanged" | "dormant";
-export type ResolutionType = "completed" | "minimum_action" | "equivalent_swap" | "atp_defer" | null;
-export type ExchangeType = Exclude<ResolutionType, "completed" | null>;
+export type CellStatus = "idle" | "active" | "completed" | "exchanged" | "mutated" | "dormant";
+export type ResolutionType = "completed" | "minimum_action" | "equivalent_swap" | "atp_defer" | "tomorrow_debt" | "task_exchange" | "mutation_token" | null;
+export type ExchangeType = "minimum_action" | "equivalent_swap" | "atp_defer";
+export type MutationType = "tomorrow_debt" | "task_exchange" | "mutation_token";
+export type TaskWeight = 1 | 2 | 3;
+export type PlanTaskStatus = "planning" | "sealed" | "released" | "completed" | "mutated";
+
+export interface SubTask {
+  id: string;
+  title: string;
+  completed: boolean;
+}
 
 export interface ExchangeRecord {
   id: string;
-  type: ExchangeType;
+  type: Exclude<ResolutionType, "completed" | null>;
   beforeTitle: string;
   afterTitle: string | null;
   atpCost: number;
   createdAt: string;
 }
 
+export interface PlannedTask {
+  id: string;
+  title: string;
+  order: number;
+  weight: TaskWeight;
+  description?: string;
+  estimatedMinutes?: number;
+  remainingMinutes?: number;
+  energy?: 1 | 2 | 3 | 4 | 5;
+  subtasks?: SubTask[];
+  mutationCount?: number;
+  status: PlanTaskStatus;
+  source: "planned" | "emergency" | "debt" | "legacy";
+  createdAt: string;
+}
+
+export interface DailyPlan {
+  id: string;
+  date: string;
+  tasks: PlannedTask[];
+  sealedAt: string | null;
+  createdAt: string;
+  status: "planning" | "sealed" | "active" | "completed";
+}
+
 export interface TaskCellModel {
   id: string;
   generationId: string;
+  sourceTaskId?: string;
   parentCellId?: string;
   originalTitle: string;
   currentTitle: string;
+  weight: TaskWeight;
+  description?: string;
+  estimatedMinutes?: number;
+  remainingMinutes?: number;
+  energy?: 1 | 2 | 3 | 4 | 5;
+  subtasks?: SubTask[];
+  mutationCount?: number;
+  timerEndsAt?: string | null;
   status: CellStatus;
   createdAt: string;
   completedAt: string | null;
@@ -31,7 +74,7 @@ export interface TaskCellModel {
 export interface GenerationModel {
   id: string;
   index: number;
-  cells: [TaskCellModel, TaskCellModel];
+  cells: TaskCellModel[];
   createdAt: string;
   maturedAt: string | null;
   skinId: CellSkinId;
@@ -40,12 +83,16 @@ export interface GenerationModel {
 export interface DaySession {
   id: string;
   date: string;
+  queue: PlannedTask[];
+  sealedAt: string | null;
+  dnaSource: "yesterday" | "emergency" | "debt" | "legacy" | "missing";
   generations: GenerationModel[];
   dormantTasks: TaskCellModel[];
   atpStart: number;
   atpEarned: number;
   atpSpent: number;
-  status: "unstarted" | "active" | "matured";
+  mutationCount: number;
+  status: "missing_dna" | "unstarted" | "active" | "matured" | "completed";
   skinId: CellSkinId;
 }
 
@@ -54,8 +101,10 @@ export interface UserPreferences {
 }
 
 export interface CellState {
-  version: 1;
+  version: 2;
   currentDate: string;
   days: DaySession[];
+  plans: DailyPlan[];
+  mutationUsageByWeek: Record<string, number>;
   preferences: UserPreferences;
 }

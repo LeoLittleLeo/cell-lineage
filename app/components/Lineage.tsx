@@ -16,7 +16,7 @@ export function Lineage({ generations, daySkinId }: { generations: GenerationMod
             <div className="lineage-generation__cells">
               {generation.cells.map((cell) => (
                 <span className={`lineage-cell lineage-cell--${cell.status}`} data-skin={cell.skinId} style={getCellSkin(cell.skinId).variables as CSSProperties} key={cell.id} title={`${getCellSkin(cell.skinId).name} · ${cell.currentTitle || "未命名细胞"}`}>
-                  {cell.status === "completed" ? "✓" : cell.status === "dormant" ? "◐" : ""}
+                  {cell.status === "completed" ? "✓" : cell.status === "mutated" ? "∿" : cell.status === "dormant" ? "◐" : ""}
                 </span>
               ))}
             </div>

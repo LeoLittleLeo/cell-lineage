@@ -16,10 +16,11 @@ test("server-renders the Cell day surface", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
   assert.match(html, /<title>Cell · 让承诺生长<\/title>/i);
-  assert.match(html, /今天尚未分裂/);
-  assert.match(html, /触碰以开始分裂/);
+  assert.match(html, /No DNA was prepared yesterday/);
+  assert.match(html, /Emergency Formation/);
   assert.match(html, /ATP/);
   assert.match(html, /CELL SKIN/);
-  assert.match(html, /og-skins\.png/);
+  assert.match(html, /TOMORROW DNA/);
+  assert.match(html, /og-dna\.png/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Your site is taking shape/);
 });
