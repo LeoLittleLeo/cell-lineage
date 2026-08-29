@@ -62,7 +62,7 @@ npm run build
 
 在线站点目前采用私有访问设置。
 
-用于作品集和秋招介绍的独立中文展示页位于 [`public/showcase.html`](public/showcase.html)，可直接在浏览器中打开并打印为 PDF。
+独立中文展示页位于 [`public/showcase.html`](public/showcase.html)，可直接在浏览器中打开并打印为 PDF。
 
 ---
 
