@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, Notification, Tray, ipcMain, nativeImage, screen } from "electron";
+import { app, BrowserWindow, Menu, Notification, Tray, globalShortcut, ipcMain, nativeImage, screen } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,6 +7,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const compactSize = { width: 410, height: 430 };
 const expandedSize = { width: 720, height: 720 };
 const divisionSize = { width: 570, height: 430 };
+const clickThroughShortcut = "CommandOrControl+Shift+X";
 let cellWindow;
 let tray;
 let clickThrough = false;
@@ -69,7 +70,7 @@ function updateTrayMenu() {
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: "显示细胞", click: () => { cellWindow.show(); cellWindow.focus(); } },
     { label: "明日基因", click: () => { cellWindow.show(); send("plan"); } },
-    { label: clickThrough ? "关闭鼠标穿透" : "开启鼠标穿透", click: () => setClickThrough(!clickThrough) },
+    { label: clickThrough ? "关闭鼠标穿透" : "开启鼠标穿透", accelerator: clickThroughShortcut, click: () => setClickThrough(!clickThrough) },
     { label: "重置位置", click: () => { const area = screen.getPrimaryDisplay().workArea; cellWindow.setPosition(area.x + area.width - compactSize.width - 28, area.y + 72); } },
     { type: "separator" },
     { label: "退出细胞", click: () => { quitting = true; app.quit(); } },
@@ -79,6 +80,10 @@ function updateTrayMenu() {
 function setClickThrough(enabled) {
   clickThrough = enabled;
   cellWindow.setIgnoreMouseEvents(enabled, { forward: true });
+  cellWindow.webContents.send("desktop:click-through", enabled);
+  if (enabled && Notification.isSupported()) {
+    new Notification({ title: "细胞已进入穿透状态", body: "按 ⌘⇧X 可随时恢复细胞交互。" }).show();
+  }
   updateTrayMenu();
 }
 
@@ -89,11 +94,15 @@ app.whenReady().then(() => {
   tray = new Tray(icon);
   tray.setToolTip("细胞 CELL");
   tray.on("click", () => { if (cellWindow.isVisible()) cellWindow.hide(); else { cellWindow.show(); cellWindow.focus(); } });
+  const shortcutRegistered = globalShortcut.register(clickThroughShortcut, () => setClickThrough(!clickThrough));
+  if (!shortcutRegistered && Notification.isSupported()) {
+    new Notification({ title: "穿透快捷键暂不可用", body: "仍可从菜单栏的“细胞 CELL”关闭鼠标穿透。" }).show();
+  }
   updateTrayMenu();
 });
 
 app.on("window-all-closed", (event) => event.preventDefault());
-app.on("before-quit", () => { quitting = true; saveBounds(); });
+app.on("before-quit", () => { quitting = true; globalShortcut.unregisterAll(); saveBounds(); });
 
 ipcMain.handle("desktop:set-mode", (_event, mode) => {
   if (!cellWindow) return;

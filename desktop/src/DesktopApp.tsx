@@ -29,6 +29,7 @@ export function DesktopApp() {
   useEffect(() => window.desktop?.onCommand((command) => {
     if (command === "plan") { setPlanToday(false); setPanel("plan"); }
   }), []);
+  useEffect(() => window.desktop?.onClickThroughChange((enabled) => setClickThrough(enabled)), []);
   useEffect(() => {
     const timer = window.setInterval(() => {
       for (const cell of latestCells) {
@@ -74,14 +75,14 @@ export function DesktopApp() {
   };
 
   return <main className={`desktop-stage ${panel ? "is-expanded" : ""} ${isDividing ? "is-dividing" : ""}`}>
-    <div className="cell-cluster">
+    <div className="cell-cluster" data-skin={skinId} style={skin.variables as CSSProperties}>
       <div className="pet-status"><i />{isDividing ? "正在分裂" : selectedCell ? statusLabel[selectedCell.status] : store.day.status === "missing_dna" ? "等待形成" : "基因已封存"}</div>
       {!isDividing && <>
         <button className="bud bud--plan no-drag" type="button" onClick={() => { setPlanToday(false); openPanel("plan"); }} aria-label="明日基因"><span>DNA</span><strong>明日基因</strong></button>
         <button className="bud bud--skin no-drag" type="button" onClick={() => openPanel("skin")} aria-label="切换细胞皮肤"><span>◌</span><strong>皮肤</strong></button>
         <button className="bud bud--lineage no-drag" type="button" onClick={() => openPanel("lineage")} aria-label="查看细胞谱系"><span>⌘</span><strong>谱系</strong></button>
-        <button className="bud bud--hide no-drag" type="button" onClick={() => window.desktop?.hide()} aria-label="隐藏到菜单栏"><span>−</span><strong>隐藏</strong></button>
-        <button className={`bud bud--through no-drag ${clickThrough ? "is-active" : ""}`} type="button" onClick={toggleThrough} aria-label={clickThrough ? "关闭鼠标穿透" : "开启鼠标穿透"}><span>{clickThrough ? "◎" : "◉"}</span><strong>穿透</strong></button>
+        <button className="bud bud--hide no-drag" type="button" onClick={() => window.desktop?.hide()} aria-label="隐藏到菜单栏"><span>−</span><strong>休眠</strong></button>
+        <button className={`bud bud--through no-drag ${clickThrough ? "is-active" : ""}`} type="button" onClick={toggleThrough} aria-label={clickThrough ? "关闭鼠标穿透，快捷键 Command Shift X" : "开启鼠标穿透，快捷键 Command Shift X"}><span>{clickThrough ? "◎" : "◉"}</span><strong>穿透</strong><small>⌘⇧X</small></button>
       </>}
 
       {isDividing ? <DivisionAnimation skinId={divisionSkinId} generation={(store.latest?.index ?? 0) + 1} /> :

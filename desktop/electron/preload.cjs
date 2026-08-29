@@ -10,4 +10,9 @@ contextBridge.exposeInMainWorld("desktop", {
     ipcRenderer.on("desktop:command", listener);
     return () => ipcRenderer.removeListener("desktop:command", listener);
   },
+  onClickThroughChange: (callback) => {
+    const listener = (_event, enabled) => callback(Boolean(enabled));
+    ipcRenderer.on("desktop:click-through", listener);
+    return () => ipcRenderer.removeListener("desktop:click-through", listener);
+  },
 });

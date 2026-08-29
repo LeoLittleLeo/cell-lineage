@@ -6,6 +6,7 @@ interface DesktopBridge {
   hide: () => Promise<void>;
   notify: (title: string, body: string) => Promise<void>;
   onCommand: (callback: (command: string) => void) => () => void;
+  onClickThroughChange: (callback: (enabled: boolean) => void) => () => void;
 }
 
 interface Window {
