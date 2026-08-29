@@ -1,0 +1,13 @@
+const { contextBridge, ipcRenderer } = require("electron");
+
+contextBridge.exposeInMainWorld("desktop", {
+  setMode: (mode) => ipcRenderer.invoke("desktop:set-mode", mode),
+  setClickThrough: (enabled) => ipcRenderer.invoke("desktop:set-click-through", enabled),
+  hide: () => ipcRenderer.invoke("desktop:hide"),
+  notify: (title, body) => ipcRenderer.invoke("desktop:notify", { title, body }),
+  onCommand: (callback) => {
+    const listener = (_event, command) => callback(command);
+    ipcRenderer.on("desktop:command", listener);
+    return () => ipcRenderer.removeListener("desktop:command", listener);
+  },
+});

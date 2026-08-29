@@ -25,7 +25,7 @@
 - **能量系统**：完成真实承诺会积累能量，部分重新协商行为会消耗能量。
 - **细胞皮肤**：提供原生、凝胶、培养皿、卵黄、水墨和苔藓六种皮肤，以及随机模式。
 - **细胞谱系**：保留每一代细胞的生长轨迹、状态和皮肤。
-- **桌面细胞**：支持浏览器画中画悬浮窗口；不支持时使用可拖动的页面内桌面宠物。
+- **原生桌面细胞**：独立透明置顶窗口，可拖动、呼吸、鼠标穿透并隐藏到系统托盘；所有操作直接从细胞器进入。
 - **本地保存**：计划、执行状态和偏好保存在当前浏览器中。
 
 ### 本地运行
@@ -38,6 +38,22 @@ npm run dev
 ```
 
 打开 [http://localhost:3000](http://localhost:3000)。
+
+### 运行桌面细胞（macOS）
+
+```bash
+cd desktop
+npm install
+npm run dev
+```
+
+生成可安装的 macOS 应用：
+
+```bash
+npm run desktop:dist
+```
+
+桌面版作为独立 Electron 应用运行，不依赖浏览器。透明细胞可以拖动、置顶、隐藏到菜单栏，并支持明日基因、任务计时、子事项、完成、突变、皮肤与谱系操作。
 
 ### 验证与构建
 
@@ -55,6 +71,7 @@ npm run build
 - CSS 动画与响应式布局
 - 浏览器 Local Storage
 - Document Picture-in-Picture API（支持时启用）
+- Electron 透明桌面窗口与系统托盘
 
 ### 数据说明
 
@@ -84,7 +101,7 @@ The model turns a static checklist into a living cycle of planning, formation, g
 - **Energy system**: completing real commitments builds energy, while selected renegotiation actions consume it.
 - **Cell skins**: choose Cell, Jelly, Petri, Yolk, Ink, Moss, or a random skin for future generations.
 - **Cell lineage**: preserve each generation's growth trail, state, and appearance.
-- **Desktop cell**: open the active cell in a browser Picture-in-Picture window, with a draggable in-page companion as fallback.
+- **Native desktop cell**: run a transparent always-on-top window with dragging, breathing animation, click-through mode, tray controls, and direct organelle interactions.
 - **Local persistence**: plans, execution state, and preferences stay in the current browser.
 
 ### Run locally
@@ -97,6 +114,22 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+### Run the desktop cell (macOS)
+
+```bash
+cd desktop
+npm install
+npm run dev
+```
+
+Build an installable macOS application:
+
+```bash
+npm run desktop:dist
+```
+
+The desktop edition is a standalone Electron application and does not depend on a browser. Planning, timers, subtasks, completion, mutation, skins, and lineage are operated directly from the cell.
 
 ### Validate and build
 
@@ -114,6 +147,7 @@ npm run build
 - CSS animation and responsive layout
 - Browser Local Storage
 - Document Picture-in-Picture API when supported
+- Electron transparent desktop window and system tray
 
 ### Data and privacy
 

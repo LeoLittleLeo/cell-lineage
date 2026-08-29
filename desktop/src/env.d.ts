@@ -1,0 +1,13 @@
+/// <reference types="vite/client" />
+
+interface DesktopBridge {
+  setMode: (mode: "compact" | "expanded") => Promise<void>;
+  setClickThrough: (enabled: boolean) => Promise<void>;
+  hide: () => Promise<void>;
+  notify: (title: string, body: string) => Promise<void>;
+  onCommand: (callback: (command: string) => void) => () => void;
+}
+
+interface Window {
+  desktop?: DesktopBridge;
+}
