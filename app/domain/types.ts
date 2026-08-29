@@ -20,6 +20,16 @@ export interface ExchangeRecord {
   afterTitle: string | null;
   atpCost: number;
   createdAt: string;
+  reason?: string;
+  emergency?: boolean;
+}
+
+export interface DebtGene {
+  inheritedFromCellId: string;
+  inheritedTitle: string;
+  energyCost: number;
+  createdAt: string;
+  clearedAt: string | null;
 }
 
 export interface PlannedTask {
@@ -30,9 +40,12 @@ export interface PlannedTask {
   description?: string;
   estimatedMinutes?: number;
   remainingMinutes?: number;
+  scheduledStart?: string;
+  scheduledEnd?: string;
   energy?: 1 | 2 | 3 | 4 | 5;
   subtasks?: SubTask[];
   mutationCount?: number;
+  debtGene?: DebtGene;
   status: PlanTaskStatus;
   source: "planned" | "emergency" | "debt" | "legacy";
   createdAt: string;
@@ -58,9 +71,13 @@ export interface TaskCellModel {
   description?: string;
   estimatedMinutes?: number;
   remainingMinutes?: number;
+  scheduledStart?: string;
+  scheduledEnd?: string;
   energy?: 1 | 2 | 3 | 4 | 5;
   subtasks?: SubTask[];
   mutationCount?: number;
+  emergencyScar?: boolean;
+  debtGene?: DebtGene;
   timerEndsAt?: string | null;
   status: CellStatus;
   createdAt: string;

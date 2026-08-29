@@ -30,7 +30,7 @@ export function mutationTokensRemaining(state: CellState, date = state.currentDa
 }
 
 export function createPlanTask(title = "", order = 0, weight: TaskWeight = 2, source: PlannedTask["source"] = "planned"): PlannedTask {
-  return { id: uid("plan_task"), title, order, weight, estimatedMinutes: 30, remainingMinutes: 30, energy: weight + 1 as 2 | 3 | 4, subtasks: [], mutationCount: 0, status: "planning", source, createdAt: now() };
+  return { id: uid("plan_task"), title, order, weight, estimatedMinutes: 30, remainingMinutes: 30, scheduledStart: "09:00", scheduledEnd: "09:30", energy: weight + 1 as 2 | 3 | 4, subtasks: [], mutationCount: 0, status: "planning", source, createdAt: now() };
 }
 
 export function createDailyPlan(date: string): DailyPlan {
@@ -56,8 +56,9 @@ export function createTaskFromPlan(generationId: string, task: PlannedTask, skin
   return {
     id: uid("cell"), generationId, sourceTaskId: task.id, parentCellId,
     originalTitle: task.title, currentTitle: task.title, weight: task.weight, status: "active",
-    description: task.description, estimatedMinutes: task.estimatedMinutes, remainingMinutes: task.remainingMinutes ?? task.estimatedMinutes,
+    description: task.description, estimatedMinutes: task.estimatedMinutes, remainingMinutes: task.remainingMinutes ?? task.estimatedMinutes, scheduledStart: task.scheduledStart, scheduledEnd: task.scheduledEnd,
     energy: task.energy, subtasks: task.subtasks ?? [], mutationCount: task.mutationCount ?? 0, timerEndsAt: null,
+    debtGene: task.debtGene,
     createdAt: now(), completedAt: null, resolutionType: null, exchangeHistory: [], atpRewardGranted: false, skinId,
   };
 }
@@ -84,7 +85,7 @@ function normalizeWeight(value: unknown): TaskWeight {
 function migratePlannedTask(task: PlannedTask, order: number, source: PlannedTask["source"] = "planned"): PlannedTask {
   const status = ["planning", "sealed", "released", "completed", "mutated"].includes(task.status) ? task.status : "planning";
   const estimatedMinutes = typeof task.estimatedMinutes === "number" ? task.estimatedMinutes : 30;
-  return { ...task, id: task.id || uid("plan_task"), title: task.title ?? "", order, weight: normalizeWeight(task.weight), estimatedMinutes, remainingMinutes: task.remainingMinutes ?? estimatedMinutes, energy: task.energy ?? 3, subtasks: task.subtasks ?? [], mutationCount: task.mutationCount ?? 0, status, source: task.source ?? source, createdAt: task.createdAt ?? now() };
+  return { ...task, id: task.id || uid("plan_task"), title: task.title ?? "", order, weight: normalizeWeight(task.weight), estimatedMinutes, remainingMinutes: task.remainingMinutes ?? estimatedMinutes, scheduledStart: task.scheduledStart, scheduledEnd: task.scheduledEnd, energy: task.energy ?? 3, subtasks: task.subtasks ?? [], mutationCount: task.mutationCount ?? 0, status, source: task.source ?? source, createdAt: task.createdAt ?? now() };
 }
 
 function migrateCell(cell: TaskCellModel, fallback: CellSkinId, sourceTaskId?: string): TaskCellModel {
@@ -94,9 +95,13 @@ function migrateCell(cell: TaskCellModel, fallback: CellSkinId, sourceTaskId?: s
     weight: normalizeWeight(cell.weight),
     estimatedMinutes: cell.estimatedMinutes ?? 30,
     remainingMinutes: cell.remainingMinutes ?? cell.estimatedMinutes ?? 30,
+    scheduledStart: cell.scheduledStart,
+    scheduledEnd: cell.scheduledEnd,
     energy: cell.energy ?? 3,
     subtasks: cell.subtasks ?? [],
     mutationCount: cell.mutationCount ?? cell.exchangeHistory?.length ?? 0,
+    emergencyScar: cell.emergencyScar ?? cell.exchangeHistory?.some((record) => record.emergency) ?? false,
+    debtGene: cell.debtGene,
     timerEndsAt: cell.timerEndsAt ?? null,
     skinId: isCellSkinId(cell.skinId) ? cell.skinId : fallback,
   };

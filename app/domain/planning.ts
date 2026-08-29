@@ -10,7 +10,7 @@ export function addTaskToPlan(plan: DailyPlan, source: PlannedTask["source"] = "
   return { ...plan, tasks: [...plan.tasks, createPlanTask("", plan.tasks.length, 2, source)] };
 }
 
-export function updatePlanTask(plan: DailyPlan, taskId: string, patch: { title?: string; weight?: TaskWeight; estimatedMinutes?: number; energy?: 1 | 2 | 3 | 4 | 5; subtasks?: SubTask[] }) {
+export function updatePlanTask(plan: DailyPlan, taskId: string, patch: { title?: string; weight?: TaskWeight; estimatedMinutes?: number; scheduledStart?: string; scheduledEnd?: string; energy?: 1 | 2 | 3 | 4 | 5; subtasks?: SubTask[] }) {
   if (plan.status !== "planning") return plan;
   return { ...plan, tasks: plan.tasks.map((task) => task.id === taskId ? { ...task, ...patch, ...(patch.estimatedMinutes !== undefined ? { remainingMinutes: patch.estimatedMinutes } : {}) } : task) };
 }
@@ -37,7 +37,7 @@ export function sealPlan(plan: DailyPlan, emergency = false) {
   return { ...plan, tasks, status: "sealed" as const, sealedAt: now() };
 }
 
-export function appendDebtTask(plan: DailyPlan, title: string, weight: TaskWeight) {
+export function appendDebtTask(plan: DailyPlan, title: string, weight: TaskWeight, inheritedFromCellId: string, inheritedTitle: string) {
   const task = createPlanTask(title.trim(), plan.tasks.length, weight, "debt");
-  return { ...plan, tasks: [...plan.tasks, { ...task, status: plan.status === "sealed" ? "sealed" as const : "planning" as const }] };
+  return { ...plan, tasks: [...plan.tasks, { ...task, debtGene: { inheritedFromCellId, inheritedTitle, energyCost: 1, createdAt: now(), clearedAt: null }, status: plan.status === "sealed" ? "sealed" as const : "planning" as const }] };
 }

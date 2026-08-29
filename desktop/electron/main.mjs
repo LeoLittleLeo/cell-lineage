@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, Notification, Tray, globalShortcut, ipcMain, nativeImage, screen } from "electron";
+import { app, BrowserWindow, Menu, Notification, Tray, globalShortcut, ipcMain, nativeImage, screen, session } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,6 +12,33 @@ let cellWindow;
 let tray;
 let clickThrough = false;
 let quitting = false;
+const cloudOrigin = "https://cell-lineage.lzw53155228.chatgpt.site";
+const cloudSession = () => session.fromPartition("persist:cell-cloud-account");
+
+async function cloudRequest(pathname, init) {
+  const response = await cloudSession().fetch(`${cloudOrigin}${pathname}`, init);
+  if (!response.ok) return { ok: false, status: response.status };
+  return { ok: true, ...(await response.json()) };
+}
+
+async function connectCloudAccount() {
+  return new Promise((resolve) => {
+    const authWindow = new BrowserWindow({ width: 520, height: 720, title: "连接细胞云端", webPreferences: { partition: "persist:cell-cloud-account", contextIsolation: true, nodeIntegration: false } });
+    let settled = false;
+    const finish = async () => {
+      if (settled) return;
+      const result = await cloudRequest("/api/sync");
+      if (!result.ok) return;
+      settled = true;
+      authWindow.close();
+      resolve({ ok: true });
+    };
+    authWindow.webContents.on("did-navigate", finish);
+    authWindow.webContents.on("did-navigate-in-page", finish);
+    authWindow.on("closed", () => { if (!settled) resolve({ ok: false }); });
+    authWindow.loadURL(`${cloudOrigin}/signin-with-chatgpt?return_to=%2F`);
+  });
+}
 
 const statePath = () => path.join(app.getPath("userData"), "window-state.json");
 const readBounds = () => {
@@ -120,3 +147,6 @@ ipcMain.handle("desktop:hide", () => cellWindow?.hide());
 ipcMain.handle("desktop:notify", (_event, payload) => {
   if (Notification.isSupported()) new Notification({ title: payload.title, body: payload.body }).show();
 });
+ipcMain.handle("desktop:cloud-connect", () => connectCloudAccount());
+ipcMain.handle("desktop:cloud-load", () => cloudRequest("/api/sync"));
+ipcMain.handle("desktop:cloud-save", (_event, state) => cloudRequest("/api/sync", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(state) }));

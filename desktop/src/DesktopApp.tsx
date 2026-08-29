@@ -10,7 +10,7 @@ const statusLabel: Record<TaskCellModel["status"], string> = {
 };
 
 export function DesktopApp() {
-  const store = useCellStore();
+  const store = useCellStore(true);
   const [panel, setPanel] = useState<Panel>(null);
   const [planToday, setPlanToday] = useState(false);
   const [selectedCellId, setSelectedCellId] = useState<string | null>(null);
@@ -77,6 +77,7 @@ export function DesktopApp() {
   return <main className={`desktop-stage ${panel ? "is-expanded" : ""} ${isDividing ? "is-dividing" : ""}`}>
     <div className="cell-cluster" data-skin={skinId} style={skin.variables as CSSProperties}>
       <div className="pet-status"><i />{isDividing ? "正在分裂" : selectedCell ? statusLabel[selectedCell.status] : store.day.status === "missing_dna" ? "等待形成" : "基因已封存"}</div>
+      <button className={`cloud-status no-drag is-${store.syncStatus}`} type="button" onClick={async () => { if (store.syncStatus !== "offline") return; const result = await window.desktop?.connectCloud(); if (result?.ok) window.location.reload(); }} title={store.syncStatus === "offline" ? "点击登录 ChatGPT 并连接云同步" : "桌面端与 Web 使用同一份谱系数据"}>{store.syncStatus === "synced" ? "云端已同步" : store.syncStatus === "syncing" ? "同步中" : "连接云端"}</button>
       {!isDividing && <>
         <button className="bud bud--plan no-drag" type="button" onClick={() => { setPlanToday(false); openPanel("plan"); }} aria-label="明日基因"><span>DNA</span><strong>明日基因</strong></button>
         <button className="bud bud--skin no-drag" type="button" onClick={() => openPanel("skin")} aria-label="切换细胞皮肤"><span>◌</span><strong>皮肤</strong></button>
@@ -103,7 +104,7 @@ export function DesktopApp() {
     {panel && <div className="attached-panel no-drag">
       <button className="panel-close" type="button" onClick={() => setPanel(null)} aria-label="关闭">×</button>
       {panel === "nucleus" && selectedCell && <NucleusPanel cell={selectedCell} onTitle={(title) => store.updateTitle(selectedCell.id, title)} />}
-      {panel === "mutation" && selectedCell && <MutationPanel cell={selectedCell} tokens={store.mutationTokens} onMutate={(type, replacement, weight) => { store.mutate(selectedCell.id, type, replacement, weight); setPanel(null); }} />}
+      {panel === "mutation" && selectedCell && <MutationPanel cell={selectedCell} tokens={store.mutationTokens} onMutate={(type, replacement, weight, reason, emergency) => { store.mutate(selectedCell.id, type, replacement, weight, reason, emergency); setPanel(null); }} />}
       {panel === "plan" && <PlanPanel store={store} today={planToday || store.day.status === "missing_dna"} onSealed={() => setPanel(null)} />}
       {panel === "skin" && <SkinPanel selected={store.selectedSkinId} active={skinId} hasCurrent={Boolean(selectedCell)} onSelect={applySkin} />}
       {panel === "lineage" && <LineagePanel store={store} />}
@@ -143,18 +144,20 @@ function NucleusPanel({ cell, onTitle }: { cell: TaskCellModel; onTitle: (title:
   return <section><span className="panel-kicker">NUCLEUS / 细胞核</span><h2>当前承诺</h2><label className="field"><span>事项名称</span><input value={cell.currentTitle} onChange={(event) => onTitle(event.target.value)} maxLength={80} /></label><div className="metrics"><span>权重 <strong>{cell.weight}</strong></span><span>精力 <strong>{cell.energy ?? 3}</strong></span><span>时间 <strong>{cell.estimatedMinutes ?? 30}′</strong></span></div>{cell.description && <p className="panel-note">{cell.description}</p>}</section>;
 }
 
-function MutationPanel({ cell, tokens, onMutate }: { cell: TaskCellModel; tokens: number; onMutate: (type: MutationType, replacement?: string, weight?: TaskWeight) => void }) {
+function MutationPanel({ cell, tokens, onMutate }: { cell: TaskCellModel; tokens: number; onMutate: (type: MutationType, replacement?: string, weight?: TaskWeight, reason?: string, emergency?: boolean) => void }) {
   const [type, setType] = useState<MutationType>("mutation_token");
   const [replacement, setReplacement] = useState("");
   const [weight, setWeight] = useState<TaskWeight>(cell.weight);
+  const [reason, setReason] = useState("");
   const needsTitle = type !== "mutation_token";
   const minimum = type === "tomorrow_debt" ? Math.min(3, cell.weight + 1) as TaskWeight : cell.weight;
-  const valid = tokens > 0 && (!needsTitle || (replacement.trim() && weight >= minimum));
+  const emergency = tokens < 1;
+  const valid = Boolean(reason.trim() && (!needsTitle || (replacement.trim() && weight >= minimum)));
   return <section><span className="panel-kicker">LYSOSOME / 溶酶体</span><h2>改变生长路径</h2><p className="token-line">本周剩余 <strong>{tokens}</strong> / 3 次突变</p><div className="mutation-grid">
     <button className={type === "tomorrow_debt" ? "is-selected" : ""} type="button" onClick={() => { setType("tomorrow_debt"); setWeight(Math.min(3, cell.weight + 1) as TaskWeight); }}><strong>明日债务</strong><small>今天释放，明天偿还</small></button>
     <button className={type === "task_exchange" ? "is-selected" : ""} type="button" onClick={() => { setType("task_exchange"); setWeight(cell.weight); }}><strong>事项交换</strong><small>换成同等或更重承诺</small></button>
     <button className={type === "mutation_token" ? "is-selected" : ""} type="button" onClick={() => setType("mutation_token")}><strong>突变机会</strong><small>承认这次计划失配</small></button>
-  </div>{needsTitle && <><label className="field"><span>替代承诺</span><input value={replacement} onChange={(event) => setReplacement(event.target.value)} placeholder="写下清晰、可执行的承诺" /></label><label className="field field--small"><span>权重（最低 {minimum}）</span><select value={weight} onChange={(event) => setWeight(Number(event.target.value) as TaskWeight)}><option value={1}>1</option><option value={2}>2</option><option value={3}>3</option></select></label></>}<button className="primary-action" type="button" disabled={!valid} onClick={() => onMutate(type, replacement, weight)}>确认突变</button></section>;
+  </div>{needsTitle && <><label className="field"><span>替代承诺</span><input value={replacement} onChange={(event) => setReplacement(event.target.value)} placeholder="写下清晰、可执行的承诺" /></label><label className="field field--small"><span>权重（最低 {minimum}）</span><select value={weight} onChange={(event) => setWeight(Number(event.target.value) as TaskWeight)}><option value={1}>1</option><option value={2}>2</option><option value={3}>3</option></select></label></>}<label className="field"><span>为什么改变？</span><input value={reason} onChange={(event) => setReason(event.target.value)} placeholder="诚实记录这次计划失配" /></label>{emergency && <p className="panel-note">额度已用完：本次为紧急突变，将留下永久伤疤。</p>}<button className="primary-action" type="button" disabled={!valid} onClick={() => onMutate(type, replacement, weight, reason, emergency)}>{emergency ? "紧急突变并留下伤疤" : "开始突变仪式"}</button></section>;
 }
 
 function PlanPanel({ store, today, onSealed }: { store: ReturnType<typeof useCellStore>; today: boolean; onSealed: () => void }) {
@@ -162,7 +165,7 @@ function PlanPanel({ store, today, onSealed }: { store: ReturnType<typeof useCel
   const plan = today ? store.todayPlan : store.tomorrowPlan;
   const tasks = plan?.tasks ?? [];
   const sealed = plan?.status === "sealed";
-  return <section><span className="panel-kicker">DNA / {today ? "紧急形成" : "明日基因"}</span><h2>{today ? "形成今日细胞" : "写入明日承诺"}</h2><p className="date-line">{date} · {sealed ? "基因已封存" : `${tasks.filter((task) => task.title.trim()).length} 个事项`}</p><div className="plan-list">{tasks.map((task, index) => <div className="plan-row" key={task.id}><span>{String(index + 1).padStart(2, "0")}</span><input value={task.title} disabled={sealed} onChange={(event) => store.editPlanTask(date, task.id, { title: event.target.value })} placeholder="一个真实承诺" /><select value={task.weight} disabled={sealed} onChange={(event) => store.editPlanTask(date, task.id, { weight: Number(event.target.value) as TaskWeight })}><option value={1}>轻</option><option value={2}>中</option><option value={3}>深</option></select>{!sealed && <button type="button" onClick={() => store.removePlanTask(date, task.id)}>×</button>}<label><small>时间</small><input type="number" min={5} max={480} step={5} value={task.estimatedMinutes ?? 30} disabled={sealed} onChange={(event) => store.editPlanTask(date, task.id, { estimatedMinutes: Number(event.target.value) })} /></label></div>)}{!tasks.length && <p className="empty-note">基因序列还是空白的。</p>}</div>{!sealed && <button className="secondary-action" type="button" onClick={() => store.addPlanTask(date, today ? "emergency" : "planned")}>＋ 添加承诺</button>}{!sealed && <button className="primary-action" type="button" disabled={!tasks.some((task) => task.title.trim())} onClick={() => { store.sealDailyPlan(date, today); onSealed(); }}>{today ? "形成今日细胞" : "封存明日基因"}</button>}{sealed && <p className="sealed-note">● 已封存。目标日期只负责执行。</p>}</section>;
+  return <section><span className="panel-kicker">DNA / {today ? "紧急形成" : "明日基因"}</span><h2>{today ? "形成今日细胞" : "写入明日承诺"}</h2><p className="date-line">{date} · {sealed ? "基因已封存" : `${tasks.filter((task) => task.title.trim()).length} 个事项`}</p><div className="plan-list">{tasks.map((task, index) => <div className="plan-row" key={task.id}><span>{String(index + 1).padStart(2, "0")}</span><input value={task.title} disabled={sealed} onChange={(event) => store.editPlanTask(date, task.id, { title: event.target.value })} placeholder="一个真实承诺" /><select value={task.weight} disabled={sealed} onChange={(event) => store.editPlanTask(date, task.id, { weight: Number(event.target.value) as TaskWeight })}><option value={1}>轻</option><option value={2}>中</option><option value={3}>深</option></select>{!sealed && <button type="button" onClick={() => store.removePlanTask(date, task.id)}>×</button>}<label><small>开始</small><input type="time" value={task.scheduledStart ?? "09:00"} disabled={sealed} onChange={(event) => store.editPlanTask(date, task.id, { scheduledStart: event.target.value })} /></label><label><small>结束</small><input type="time" value={task.scheduledEnd ?? "09:30"} disabled={sealed} onChange={(event) => store.editPlanTask(date, task.id, { scheduledEnd: event.target.value })} /></label></div>)}{!tasks.length && <p className="empty-note">基因序列还是空白的。</p>}</div>{!sealed && <button className="secondary-action" type="button" onClick={() => store.addPlanTask(date, today ? "emergency" : "planned")}>＋ 添加承诺</button>}{!sealed && <button className="primary-action" type="button" disabled={!tasks.some((task) => task.title.trim())} onClick={() => { store.sealDailyPlan(date, today); onSealed(); }}>{today ? "形成今日细胞" : "封存明日基因"}</button>}{sealed && <p className="sealed-note">● 已封存。目标日期只负责执行。</p>}</section>;
 }
 
 function SkinPanel({ selected, active, hasCurrent, onSelect }: { selected: string; active: CellSkinId; hasCurrent: boolean; onSelect: (skinId: SkinSelection) => void }) {

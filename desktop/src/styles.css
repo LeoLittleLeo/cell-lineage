@@ -13,6 +13,7 @@ button { color: inherit; }
 .cell-texture { position: absolute; inset: 5%; border-radius: inherit; background-image: var(--skin-texture); background-size: 9px 9px; opacity: var(--skin-texture-opacity); pointer-events: none; }
 .pet-status { position: absolute; z-index: 8; left: 50%; top: -15px; display: flex; align-items: center; gap: 7px; padding: 6px 10px; transform: translateX(-50%); border: 1px solid rgba(55,76,61,.15); border-radius: 99px; background: rgba(242,240,231,.86); backdrop-filter: blur(8px); color: #536159; white-space: nowrap; font-size: 8px; letter-spacing: .1em; }
 .pet-status i { width: 5px; aspect-ratio: 1; border-radius: 50%; background: #678269; box-shadow: 0 0 0 3px rgba(103,130,105,.12); }
+.cloud-status{position:absolute;z-index:30;left:50%;top:20px;transform:translateX(-50%);padding:3px 7px;border:1px solid rgba(57,79,63,.13);border-radius:99px;background:rgba(246,244,237,.66);color:rgba(55,73,61,.5);font-size:6px;letter-spacing:.07em;cursor:default}.cloud-status.is-offline{border-color:rgba(145,89,69,.25);color:#855b4d;cursor:pointer}.cloud-status.is-syncing{animation:statusPulse 1.2s ease infinite}
 .bud { position: absolute; z-index: 12; width: 32px; aspect-ratio: 1; display: grid; place-items: center; padding: 0; border: 1px solid rgba(61,83,67,.24); border-radius: 50%; background: rgba(241,240,232,.88); backdrop-filter: blur(8px); font: 7px ui-monospace, monospace; cursor: pointer; transition: transform .2s ease, background .2s ease; }
 .bud:hover { transform: scale(1.12); background: #f7f5ed; }.bud--plan { left: 5px; top: 58px; }.bud--skin { left: 0; top: 105px; }.bud--lineage { right: 1px; top: 78px; }.bud--hide { right: 13px; top: 34px; }.bud--through { right: 1px; bottom: 72px; }
 .organelles { position: absolute; inset: 4%; }
@@ -130,3 +131,4 @@ button { color: inherit; }
 @keyframes daughter-a { 0%,67% { opacity: 0; transform: translate(-50%,-50%) scale(.65); } 76% { opacity: 1; } 100% { opacity: 1; transform: translate(-113%,-50%) scale(1); } }
 @keyframes daughter-b { 0%,67% { opacity: 0; transform: translate(-50%,-50%) scale(.65); } 76% { opacity: 1; } 100% { opacity: 1; transform: translate(13%,-50%) scale(1); } }
 @keyframes receptor-pulse { 50% { opacity: .7; transform: scale(.96); filter: saturate(.75); } }
+@keyframes statusPulse { 50% { opacity:.35; } }

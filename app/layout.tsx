@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
+import { PWARegistration } from "./components/PWARegistration";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     openGraph: { title, description, type: "website", images: [{ url: socialImage, width: 1727, height: 911, alt: "细胞 CELL — 从明日基因到细胞分裂" }] },
     twitter: { card: "summary_large_image", title, description, images: [socialImage] },
+    manifest: "/manifest.webmanifest",
   };
 }
 
@@ -40,7 +42,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <PWARegistration />{children}
       </body>
     </html>
   );

@@ -27,16 +27,22 @@ function flash(message) {
   window.setTimeout(() => toast.classList.remove("show"), 1400);
 }
 
+function geneMarkup(seed, className = "") {
+  const bases = ["A", "T", "C", "G"];
+  const hash = [...seed].reduce((total, character) => total + character.charCodeAt(0), 0);
+  return `<span class="demo-gene ${className}" aria-hidden="true"><i></i><i></i><b>${Array.from({ length: 11 }, (_, index) => `<em data-base="${bases[(hash + index * 7) % 4]}"><span>${bases[(hash + index * 7) % 4]}</span></em>`).join("")}</b></span>`;
+}
+
 function renderPlan() {
-  return `<div class="plan-sheet"><span class="scene-kicker">DNA / TOMORROW</span><h2>写入明日承诺</h2><p>一条基因只对应一个真实、可执行的承诺。</p><label class="task"><span>01</span><input value="完善秋招作品集" aria-label="第一个承诺"><em>深 · 50′</em></label><label class="task"><span>02</span><input value="准备 AI 产品面试案例" aria-label="第二个承诺"><em>中 · 35′</em></label><button class="dna-seal" type="button" data-next>封存明日基因</button></div>`;
+  return `<div class="plan-sheet"><span class="scene-kicker">DNA / TOMORROW</span><h2>写入明日承诺</h2><p>标题决定序列身份，权重、时间与精力改变碱基节奏。</p><label class="task"><span>01</span><input value="完善秋招作品集" aria-label="第一个承诺"><em>深 · 50′</em><span class="task-gene">${geneMarkup("完善秋招作品集")}</span></label><label class="task"><span>02</span><input value="准备 AI 产品面试案例" aria-label="第二个承诺"><em>中 · 35′</em><span class="task-gene">${geneMarkup("准备 AI 产品面试案例")}</span></label><button class="dna-seal" type="button" data-next>闭合双链并封存</button></div>`;
 }
 
 function renderFormation() {
-  return `<div class="formation"><div class="formation-cell"><div class="formation-core"><strong>形成第一代</strong><small>2 个承诺等待释放</small></div></div><div class="formation-status"><strong>今日 DNA 已就绪</strong><span class="scene-note">点击形成细胞，每代最多释放两个承诺</span></div><button class="scene-action" type="button" data-next>形成第一代细胞</button></div>`;
+  return `<div class="formation"><div class="formation-cell"><div class="formation-core">${geneMarkup("第一代", "demo-gene--vertical")}<strong>形成第一代</strong><small>2 段编码等待表达</small></div></div><div class="formation-status"><strong>今日 DNA 已就绪</strong><span class="scene-note">封存序列将进入细胞核并表达为今日承诺</span></div><button class="scene-action" type="button" data-next>表达第一代细胞</button></div>`;
 }
 
 function renderCell() {
-  return `<div class="cell-scene"><div class="cell-live"><button class="mitochondria" id="timerControl" type="button" aria-label="开始计时"><i></i><i></i><span>25<small>分钟</small></span></button><div class="ribosomes"><button type="button" data-ribosome>1</button><button type="button" data-ribosome>2</button><button type="button" data-ribosome>3</button></div><div class="nucleus"><strong>完善秋招<br>作品集</strong><small>细胞核 · 当前承诺</small></div><button class="org-btn complete" type="button" data-next><i></i><span>完成</span></button><button class="org-btn mutate" type="button" id="mutateButton"><i></i><span>突变</span></button></div><div class="cell-hint"><i></i>点击细胞器直接执行 · 线粒体可开始计时</div></div>`;
+  return `<div class="cell-scene"><div class="cell-live"><button class="mitochondria" id="timerControl" type="button" aria-label="开始计时"><i></i><i></i><span>25<small>分钟</small></span></button><div class="ribosomes"><button type="button" data-ribosome>1</button><button type="button" data-ribosome>2</button><button type="button" data-ribosome>3</button></div><div class="nucleus">${geneMarkup("完善秋招作品集", "demo-gene--vertical nucleus-dna")}<strong>完善秋招<br>作品集</strong><small>细胞核 · 核酸表达</small></div><button class="org-btn complete" type="button" data-next><i></i><span>完成</span></button><button class="org-btn mutate" type="button" id="mutateButton"><i></i><span>突变</span></button></div><div class="cell-hint"><i></i>核酸链保留任务身份 · 细胞器承担执行功能</div></div>`;
 }
 
 function renderMature() {
@@ -44,7 +50,7 @@ function renderMature() {
 }
 
 function renderMitosis() {
-  return `<div class="mitosis-wrap"><div class="mitosis"><div class="mitosis-body"><i class="mitosis-nucleus a"></i><i class="mitosis-nucleus b"></i><b class="furrow"></b></div></div><div class="mitosis-copy"><strong>第 02 代正在形成</strong><small>收缩 · 复制 · 分裂 · 释放承诺</small></div></div>`;
+  return `<div class="mitosis-wrap"><div class="mitosis"><div class="mitosis-body">${geneMarkup("第二代", "demo-gene--vertical division-dna")}<i class="mitosis-nucleus a">${geneMarkup("第二代", "daughter-dna")}</i><i class="mitosis-nucleus b">${geneMarkup("第二代", "daughter-dna")}</i><b class="furrow"></b></div></div><div class="mitosis-copy"><strong>核酸复制后进入两个子细胞</strong><small>收缩 · 复制 · 分配 · 分裂 · 表达</small></div></div>`;
 }
 
 function renderDesktop() {

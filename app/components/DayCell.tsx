@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { getCellSkin, type CellSkinId } from "../domain/skins";
 import { useLanguage } from "../i18n/LanguageContext";
+import { GeneStrand } from "./GeneStrand";
 
 export function DayCell({ onDivide, skinId, taskCount }: { onDivide: () => void; skinId: CellSkinId; taskCount: number }) {
   const { isZh } = useLanguage();
@@ -11,7 +12,7 @@ export function DayCell({ onDivide, skinId, taskCount }: { onDivide: () => void;
     <section className="day-stage" aria-labelledby="day-state">
       <p className="eyebrow" id="day-state">{isZh ? "今天尚未分裂" : "TODAY HAS NOT DIVIDED"}</p>
       <button className="day-cell" data-skin={skinId} style={getCellSkin(skinId).variables as CSSProperties} type="button" onClick={onDivide} aria-label={isZh ? "开始今天的第一次分裂" : "Start today's first division"}>
-        <span className="day-cell__nucleus" aria-hidden="true" />
+        <span className="day-cell__nucleus" aria-hidden="true"><GeneStrand seed={`${parts.day}-${taskCount}`} weight={Math.min(3, Math.max(1, taskCount))} minutes={taskCount * 30} energy={3} className="day-cell__gene" /></span>
         <span className="day-cell__date"><strong>{parts.day}</strong><span>{parts.month?.toUpperCase()}</span></span>
         <span className="day-cell__weekday">{parts.weekday?.toUpperCase()}</span>
         <span className="day-cell__task-count">{isZh ? `${taskCount} 个事项 · 基因已封存` : `${taskCount} TASKS · DNA SEALED`}</span>

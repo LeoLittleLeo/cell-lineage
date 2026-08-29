@@ -7,6 +7,9 @@ interface DesktopBridge {
   notify: (title: string, body: string) => Promise<void>;
   onCommand: (callback: (command: string) => void) => () => void;
   onClickThroughChange: (callback: (enabled: boolean) => void) => () => void;
+  connectCloud: () => Promise<{ ok: boolean }>;
+  cloudLoad: () => Promise<{ ok: boolean; state?: import("../../app/domain/types").CellState | null }>;
+  cloudSave: (state: import("../../app/domain/types").CellState) => Promise<{ ok: boolean }>;
 }
 
 interface Window {

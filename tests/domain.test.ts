@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { deriveCellVisualModel } from "../app/domain/cellVisual";
-import { sealPlan } from "../app/domain/planning";
+import { deriveMonthlyReview } from "../app/domain/analytics";
+import { appendDebtTask, sealPlan } from "../app/domain/planning";
+import { deriveTaskProgress } from "../app/domain/progress";
 import { canDivide, createDailyPlan, createDay, createPlanTask, getLocalDateKey, mutationTokensRemaining, normalizeForToday } from "../app/domain/rules";
 import { CELL_SKINS, resolveSkinSelection } from "../app/domain/skins";
 import { completeCell, mutateCell, releaseNextTasks, toggleCellSubtask, toggleCellTimer } from "../app/domain/transitions";
@@ -62,6 +64,26 @@ test("task exchange enforces equal weight while other mutations resolve", () => 
   assert.equal(day.queue[0].status, "mutated");
 });
 
+test("emergency mutation preserves its reason and permanent scar", () => {
+  let day = releaseNextTasks(queuedDay(1));
+  const cell = day.generations[0].cells[0];
+  day = mutateCell(day, cell.id, "mutation_token", undefined, undefined, "Priority changed", true);
+  const changed = day.generations[0].cells[0];
+  assert.equal(changed.emergencyScar, true);
+  assert.equal(changed.exchangeHistory[0].reason, "Priority changed");
+  assert.equal(changed.exchangeHistory[0].emergency, true);
+});
+
+test("tomorrow debt becomes an inherited gene that costs energy to clear", () => {
+  const plan = appendDebtTask(createDailyPlan("2026-08-28"), "Repay promise", 3, "parent-1", "Old promise");
+  let day = releaseNextTasks(createDay("2026-08-28", 2, "cell", plan.tasks.map((item) => ({ ...item, status: "sealed" }))));
+  const cell = day.generations[0].cells[0];
+  assert.equal(cell.debtGene?.inheritedFromCellId, "parent-1");
+  day = completeCell(day, cell.id);
+  assert.equal(day.atpSpent, 1);
+  assert.ok(day.generations[0].cells[0].debtGene?.clearedAt);
+});
+
 test("timer and ribosomes carry real task state", () => {
   const withSubtasks = { ...task("Build portfolio", 0, 3), subtasks: [{ id: "s1", title: "Research", completed: false }, { id: "s2", title: "Export", completed: false }] };
   let day = releaseNextTasks(createDay("2026-08-27", 2, "cell", [withSubtasks]));
@@ -74,6 +96,23 @@ test("timer and ribosomes carry real task state", () => {
   assert.equal(visual.ribosomeCount, 2);
   assert.ok(visual.mitochondriaCount > 0);
   assert.ok(visual.membraneStability > .18);
+});
+
+test("a scheduled task exposes independent time-window and execution progress", () => {
+  const day = releaseNextTasks(createDay("2026-08-27", 2, "cell", [{ ...task("Timed", 0), scheduledStart: "09:00", scheduledEnd: "10:00", subtasks: [{ id: "s1", title: "Half", completed: true }, { id: "s2", title: "Rest", completed: false }] }]));
+  const progress = deriveTaskProgress(day.generations[0].cells[0], new Date(2026, 7, 27, 9, 30).getTime());
+  assert.equal(progress.state, "active");
+  assert.equal(progress.windowProgress, .5);
+  assert.equal(progress.executionProgress, .5);
+});
+
+test("monthly review measures fulfilled promises against honest mutations", () => {
+  let day = releaseNextTasks(queuedDay(2));
+  day = completeCell(day, day.generations[0].cells[0].id);
+  day = mutateCell(day, day.generations[0].cells[1].id, "mutation_token", undefined, undefined, "No longer relevant");
+  const review = deriveMonthlyReview([day], "2026-08-27");
+  assert.equal(review.fulfillmentRate, .5);
+  assert.equal(review.mutated, 1);
 });
 
 test("a sealed plan for today becomes executable DNA", () => {

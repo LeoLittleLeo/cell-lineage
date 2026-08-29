@@ -3,17 +3,26 @@
 import { useState } from "react";
 import type { DailyPlan, SubTask, TaskWeight } from "../domain/types";
 import { useLanguage } from "../i18n/LanguageContext";
+import { GeneStrand } from "./GeneStrand";
 
 interface Props {
   date: string;
   plan?: DailyPlan;
   emergency?: boolean;
   onAdd: () => void;
-  onEdit: (taskId: string, patch: { title?: string; weight?: TaskWeight; estimatedMinutes?: number; energy?: 1 | 2 | 3 | 4 | 5; subtasks?: SubTask[] }) => void;
+  onEdit: (taskId: string, patch: { title?: string; weight?: TaskWeight; estimatedMinutes?: number; scheduledStart?: string; scheduledEnd?: string; energy?: 1 | 2 | 3 | 4 | 5; subtasks?: SubTask[] }) => void;
   onDelete: (taskId: string) => void;
   onMove: (taskId: string, targetIndex: number) => void;
   onSeal: () => void;
   onClose: () => void;
+}
+
+function durationBetween(start?: string, end?: string) {
+  if (!start || !end) return undefined;
+  const [startHour, startMinute] = start.split(":").map(Number);
+  const [endHour, endMinute] = end.split(":").map(Number);
+  const duration = endHour * 60 + endMinute - (startHour * 60 + startMinute);
+  return duration > 0 ? duration : undefined;
 }
 
 export function TomorrowPlanPanel({ date, plan, emergency = false, onAdd, onEdit, onDelete, onMove, onSeal, onClose }: Props) {
@@ -34,6 +43,7 @@ export function TomorrowPlanPanel({ date, plan, emergency = false, onAdd, onEdit
         <h2 id="plan-title">{emergency ? (isZh ? "为今天紧急形成一组基因" : "Form an emergency DNA sequence for today") : (isZh ? "为明天设计细胞的生长" : "Design tomorrow's cell growth")}</h2>
         <div className="plan-meta"><span>{dateLabel}</span><span>{sealed ? (isZh ? "已封存" : "SEALED") : (isZh ? `${validTasks.length} 个事项` : `${validTasks.length} TASKS`)}</span></div>
         <p className="plan-intro">{emergency ? (isZh ? "昨天没有留下基因。这是一次例外形成，封存后今天只负责执行。" : "No DNA was left yesterday. This is an exception; once sealed, today is for execution only.") : (isZh ? "排好顺序后封存。明天的你不再编辑，只负责让这些承诺逐步显现。" : "Order and seal the plan. Tomorrow you will stop editing and let each commitment emerge in sequence.")}</p>
+        <div className="gene-legend"><span>{isZh ? "核酸编码" : "NUCLEIC ACID CODE"}</span><p>{isZh ? "标题决定序列身份 · 权重、时间与精力改变碱基节奏" : "Title defines identity · weight, time, and energy shape the base rhythm"}</p><b><i>A</i><i>T</i><i>C</i><i>G</i></b></div>
 
         <div className="plan-task-list">
           {tasks.map((task, index) => (
@@ -54,7 +64,10 @@ export function TomorrowPlanPanel({ date, plan, emergency = false, onAdd, onEdit
                 </select>
               )}
               {!sealed && <div className="plan-task__actions"><button type="button" disabled={index === 0} onClick={() => onMove(task.id, index - 1)} aria-label={isZh ? "上移" : "Move up"}>↑</button><button type="button" disabled={index === tasks.length - 1} onClick={() => onMove(task.id, index + 1)} aria-label={isZh ? "下移" : "Move down"}>↓</button><button type="button" onClick={() => onDelete(task.id)} aria-label={isZh ? "删除" : "Delete"}>×</button></div>}
-              {sealed ? <span className="plan-task__bio-summary">{isZh ? `${task.estimatedMinutes ?? 30} 分钟 · 精力 ${task.energy ?? 3}${task.subtasks?.length ? ` · ${task.subtasks.length} 个子事项` : ""}` : `${task.estimatedMinutes ?? 30} MIN · ENERGY ${task.energy ?? 3}${task.subtasks?.length ? ` · ${task.subtasks.length} SUBTASKS` : ""}`}</span> : <div className="plan-task__bio">
+              <GeneStrand seed={task.title || task.id} weight={task.weight} minutes={task.estimatedMinutes ?? 30} energy={task.energy ?? 3} compact className={sealed ? "is-sealed" : ""} label={isZh ? `事项 ${index + 1} 的核酸编码` : `Nucleic acid encoding for task ${index + 1}`} />
+              {sealed ? <span className="plan-task__bio-summary">{isZh ? `${task.scheduledStart && task.scheduledEnd ? `${task.scheduledStart}—${task.scheduledEnd} · ` : ""}${task.estimatedMinutes ?? 30} 分钟 · 精力 ${task.energy ?? 3}${task.subtasks?.length ? ` · ${task.subtasks.length} 个子事项` : ""}` : `${task.scheduledStart && task.scheduledEnd ? `${task.scheduledStart}—${task.scheduledEnd} · ` : ""}${task.estimatedMinutes ?? 30} MIN · ENERGY ${task.energy ?? 3}${task.subtasks?.length ? ` · ${task.subtasks.length} SUBTASKS` : ""}`}</span> : <div className="plan-task__bio">
+                <label className="plan-task__time-field"><span>{isZh ? "开始" : "START"}</span><input type="time" value={task.scheduledStart ?? ""} onChange={(event) => { const scheduledStart = event.target.value; const estimatedMinutes = durationBetween(scheduledStart, task.scheduledEnd); onEdit(task.id, { scheduledStart, ...(estimatedMinutes ? { estimatedMinutes } : {}) }); }} /></label>
+                <label className="plan-task__time-field"><span>{isZh ? "结束" : "END"}</span><input type="time" value={task.scheduledEnd ?? ""} onChange={(event) => { const scheduledEnd = event.target.value; const estimatedMinutes = durationBetween(task.scheduledStart, scheduledEnd); onEdit(task.id, { scheduledEnd, ...(estimatedMinutes ? { estimatedMinutes } : {}) }); }} /></label>
                 <label><span>{isZh ? "时间" : "TIME"}</span><input type="number" min={5} max={480} step={5} value={task.estimatedMinutes ?? 30} onChange={(event) => onEdit(task.id, { estimatedMinutes: Math.max(5, Number(event.target.value) || 5) })} /><small>{isZh ? "分钟" : "MIN"}</small></label>
                 <label><span>{isZh ? "精力" : "ENERGY"}</span><select value={task.energy ?? 3} onChange={(event) => onEdit(task.id, { energy: Number(event.target.value) as 1 | 2 | 3 | 4 | 5 })}><option value={1}>1</option><option value={2}>2</option><option value={3}>3</option><option value={4}>4</option><option value={5}>5</option></select></label>
                 <label className="plan-task__subtasks"><span>{isZh ? "子事项 · 用逗号分隔" : "SUBTASKS · SEPARATE WITH COMMAS"}</span><input value={(task.subtasks ?? []).map((item) => item.title).join(isZh ? "，" : ", ")} onChange={(event) => onEdit(task.id, { subtasks: event.target.value.split(/[，,]/).map((title) => title.trim()).filter(Boolean).map((title, subIndex) => ({ id: `${task.id}_sub_${subIndex}`, title, completed: false })) })} placeholder={isZh ? "研究，制作，检查" : "Research, create, review"} /></label>

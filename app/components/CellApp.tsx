@@ -21,8 +21,8 @@ import { TomorrowPlanPanel } from "./TomorrowPlanPanel";
 
 type PlanMode = "tomorrow" | "emergency" | null;
 
-export function CellApp() {
-  const store = useCellStore();
+export function CellApp({ user }: { user: { displayName: string } | null }) {
+  const store = useCellStore(Boolean(user));
   const { isZh, language, setLanguage } = useLanguage();
   const [isDividing, setIsDividing] = useState(false);
   const [divisionSkinId, setDivisionSkinId] = useState<CellSkinId | null>(null);
@@ -53,6 +53,12 @@ export function CellApp() {
     return () => window.removeEventListener("keydown", onKey);
   }, [mutationCell, skinPickerOpen, planMode]);
 
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("capture") !== "tomorrow") return;
+    const timer = window.setTimeout(() => setPlanMode("tomorrow"), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   const resolvedCount = store.latest?.cells.filter((cell) => cell.status === "completed" || cell.status === "mutated" || cell.status === "dormant").length ?? 0;
   const latestCount = store.latest?.cells.length ?? 0;
   const archive = useMemo(() => store.state.days.filter((day) => day.date !== store.state.currentDate), [store.state]);
@@ -74,7 +80,7 @@ export function CellApp() {
           <p className="maturity-count"><strong>{resolvedCount} / {latestCount}</strong> {isZh ? `个细胞已解决 · 今日 ${store.resolvedTasks} / ${store.totalTasks}` : `cells resolved · today ${store.resolvedTasks} / ${store.totalTasks}`}</p>
         </div>
         <div className={`task-cell-grid ${latestCount === 1 ? "task-cell-grid--single" : ""}`}>
-          {store.latest.cells.map((cell, index) => <TaskCell key={cell.id} cell={cell} label={isZh ? `细胞 ${index === 0 ? "甲" : "乙"}` : `Cell ${index === 0 ? "A" : "B"}`} onTitle={(title) => store.updateTitle(cell.id, title)} onComplete={() => store.complete(cell.id)} onMutation={() => setMutationCell(cell)} onTimer={() => store.toggleTimer(cell.id)} onSubtask={(subtaskId) => store.toggleSubtask(cell.id, subtaskId)} onDivide={startDivision} divisionAvailable={store.canDivide && store.remainingQueued > 0} />)}
+          {store.latest.cells.map((cell, index) => <TaskCell key={cell.id} cell={cell} label={isZh ? `细胞 ${index === 0 ? "芽生体" : "游走体"}` : `Cell ${index === 0 ? "Budling" : "Motile"}`} health={Math.min(1, Math.max(.08, (store.atp + 2) / 8))} onTitle={(title) => store.updateTitle(cell.id, title)} onComplete={() => store.complete(cell.id)} onMutation={() => setMutationCell(cell)} onTimer={() => store.toggleTimer(cell.id)} onSubtask={(subtaskId) => store.toggleSubtask(cell.id, subtaskId)} onDivide={startDivision} divisionAvailable={store.canDivide && store.remainingQueued > 0} />)}
         </div>
         <div className="generation-gate">{!store.canDivide && <p className="division-locked">{isZh ? "分裂尚未激活 · 先解决当前细胞" : "DIVISION LOCKED · Resolve the current cells first"}</p>}</div>
       </section>;
@@ -83,6 +89,7 @@ export function CellApp() {
     <header className="quiet-header">
       <div><span className="wordmark">{isZh ? "细胞" : "CELL"}</span><span className="wordmark-sub">{isZh ? "让承诺生长" : "Let commitments grow"}</span></div>
       <div className="header-controls">
+        {user ? <span className={`sync-indicator is-${store.syncStatus}`} title={user.displayName}><i />{store.syncStatus === "synced" ? (isZh ? "云端已同步" : "CLOUD SYNCED") : store.syncStatus === "syncing" ? (isZh ? "同步中" : "SYNCING") : (isZh ? "离线缓存" : "OFFLINE CACHE")}</span> : <a className="signin-trigger" href="/signin-with-chatgpt?return_to=%2F">{isZh ? "登录并同步" : "SIGN IN & SYNC"}</a>}
         <button className="language-switch" type="button" onClick={() => setLanguage(language === "zh" ? "en" : "zh")} aria-label={isZh ? "Switch to English" : "切换到中文"}>{isZh ? "EN" : "中文"}</button>
         <DesktopPet snapshot={{ title: activeCell?.currentTitle ?? (store.day.status === "completed" ? (isZh ? "今天的承诺已经成熟" : "Today's commitments are mature") : (isZh ? "等待今日细胞" : "Waiting for today's cell")), minutes: activeCell?.remainingMinutes, status: petStatus, skinId: activeCell?.skinId ?? activeSkinId }} onComplete={activeCell ? () => store.complete(activeCell.id) : undefined} onTimer={activeCell?.estimatedMinutes ? () => store.toggleTimer(activeCell.id) : undefined} />
         <button className="dna-trigger" type="button" onClick={() => setPlanMode("tomorrow")}><small>{isZh ? "明日基因" : "TOMORROW DNA"}</small><strong>{store.tomorrowPlan?.status === "sealed" ? (isZh ? "已封存" : "SEALED") : `${store.tomorrowPlan?.tasks.filter((task) => task.title.trim()).length ?? 0} ${isZh ? "个事项" : "TASKS"}`}</strong></button>
@@ -92,9 +99,9 @@ export function CellApp() {
       </div>
     </header>
     {stage}
-    <Lineage generations={store.day.generations} daySkinId={store.day.skinId} />
+    <Lineage generations={store.day.generations} daySkinId={store.day.skinId} days={store.state.days} currentDate={store.state.currentDate} />
     <footer className="archive-note"><span>{isZh ? `${archive.length} 个过往日期已封存` : `${archive.length} past days archived`}</span><span>{isZh ? `${dormantCount} 个休眠细胞被保留` : `${dormantCount} dormant cells preserved`}</span></footer>
-    {mutationCell && <MutationPanel cell={mutationCell} tokens={store.mutationTokens} onClose={() => setMutationCell(null)} onMutate={(type, replacement, weight) => store.mutate(mutationCell.id, type, replacement, weight)} />}
+    {mutationCell && <MutationPanel cell={mutationCell} tokens={store.mutationTokens} onClose={() => setMutationCell(null)} onMutate={(type, replacement, weight, reason, emergency) => store.mutate(mutationCell.id, type, replacement, weight, reason, emergency)} />}
     {planMode && <TomorrowPlanPanel date={activePlanDate} plan={activePlan} emergency={planMode === "emergency"} onAdd={() => store.addPlanTask(activePlanDate, planMode === "emergency" ? "emergency" : "planned")} onEdit={(id, patch) => store.editPlanTask(activePlanDate, id, patch)} onDelete={(id) => store.removePlanTask(activePlanDate, id)} onMove={(id, index) => store.reorderPlanTask(activePlanDate, id, index)} onSeal={() => { store.sealDailyPlan(activePlanDate, planMode === "emergency"); setPlanMode(null); }} onClose={() => setPlanMode(null)} />}
     {skinPickerOpen && <SkinPicker selected={store.selectedSkinId} onSelect={store.setSkin} onClose={() => setSkinPickerOpen(false)} />}
   </main>;

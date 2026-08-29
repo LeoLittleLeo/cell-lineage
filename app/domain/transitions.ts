@@ -44,6 +44,7 @@ export function setCellTitle(day: DaySession, cellId: string, title: string): Da
 
 export function completeCell(day: DaySession, cellId: string): DaySession {
   let reward = 0;
+  let debtCost = 0;
   let completedSourceTaskId: string | undefined;
   const generations = day.generations.map((generation) => ({
     ...generation,
@@ -51,11 +52,13 @@ export function completeCell(day: DaySession, cellId: string): DaySession {
       if (cell.id !== cellId || cell.status !== "active" || !cell.currentTitle.trim()) return cell;
       completedSourceTaskId = cell.sourceTaskId;
       if (!cell.atpRewardGranted) reward = cell.resolutionType === "minimum_action" ? 0 : cell.resolutionType === "equivalent_swap" || cell.resolutionType === "task_exchange" ? ATP_REWARD_SWAP : ATP_REWARD_COMPLETE;
-      return { ...cell, currentTitle: cell.currentTitle.trim(), status: "completed" as const, completedAt: now(), resolutionType: cell.resolutionType ?? "completed", atpRewardGranted: true };
+      if (cell.debtGene && !cell.debtGene.clearedAt) debtCost = cell.debtGene.energyCost;
+      const completedAt = now();
+      return { ...cell, currentTitle: cell.currentTitle.trim(), status: "completed" as const, completedAt, resolutionType: cell.resolutionType ?? "completed", atpRewardGranted: true, debtGene: cell.debtGene ? { ...cell.debtGene, clearedAt: completedAt } : undefined };
     }),
   }));
   const queue = completedSourceTaskId ? day.queue.map((task) => task.id === completedSourceTaskId ? { ...task, status: "completed" as const } : task) : day.queue;
-  return settleGeneration({ ...day, generations, queue, atpEarned: day.atpEarned + reward });
+  return settleGeneration({ ...day, generations, queue, atpEarned: day.atpEarned + reward, atpSpent: day.atpSpent + debtCost });
 }
 
 export function toggleCellTimer(day: DaySession, cellId: string): DaySession {
@@ -77,7 +80,7 @@ export function toggleCellSubtask(day: DaySession, cellId: string, subtaskId: st
     : cell) })) };
 }
 
-export function mutateCell(day: DaySession, cellId: string, type: MutationType, replacement?: string, replacementWeight?: TaskWeight): DaySession {
+export function mutateCell(day: DaySession, cellId: string, type: MutationType, replacement?: string, replacementWeight?: TaskWeight, reason = "", emergency = false): DaySession {
   let sourceTaskId: string | undefined;
   let changed = false;
   const generations = day.generations.map((generation) => ({
@@ -90,12 +93,12 @@ export function mutateCell(day: DaySession, cellId: string, type: MutationType, 
       const record = {
         id: uid("mutation"), type, beforeTitle: cell.currentTitle,
         afterTitle: type === "task_exchange" ? replacement!.trim() : null,
-        atpCost: 0, createdAt: now(),
+        atpCost: 0, createdAt: now(), reason: reason.trim(), emergency,
       };
       if (type === "task_exchange") {
-        return { ...cell, currentTitle: replacement!.trim(), weight: replacementWeight!, mutationCount: (cell.mutationCount ?? 0) + 1, resolutionType: "task_exchange" as const, exchangeHistory: [...cell.exchangeHistory, record] };
+        return { ...cell, currentTitle: replacement!.trim(), weight: replacementWeight!, mutationCount: (cell.mutationCount ?? 0) + 1, emergencyScar: cell.emergencyScar || emergency, resolutionType: "task_exchange" as const, exchangeHistory: [...cell.exchangeHistory, record] };
       }
-      return { ...cell, status: "mutated" as const, completedAt: now(), mutationCount: (cell.mutationCount ?? 0) + 1, resolutionType: type, exchangeHistory: [...cell.exchangeHistory, record] };
+      return { ...cell, status: "mutated" as const, completedAt: now(), mutationCount: (cell.mutationCount ?? 0) + 1, emergencyScar: cell.emergencyScar || emergency, resolutionType: type, exchangeHistory: [...cell.exchangeHistory, record] };
     }),
   }));
   if (!changed) return day;
