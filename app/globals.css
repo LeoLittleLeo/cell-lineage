@@ -27,6 +27,9 @@ button { -webkit-tap-highlight-color: transparent; }
 .wordmark { font-size: 12px; font-weight: 650; letter-spacing: .34em; }
 .wordmark-sub { color: var(--ink-soft); font-family: var(--serif); font-size: 11px; font-style: italic; letter-spacing: .06em; }
 .header-controls { display: flex; align-items: center; gap: 9px; }
+.language-switch { min-width: 42px; min-height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(244,243,236,.5); color: var(--moss-deep); font: 600 9px var(--font-geist-mono), monospace; letter-spacing: .08em; cursor: pointer; }
+.language-switch:hover { border-color: rgba(64,86,70,.34); background: rgba(247,246,239,.78); }
+.language-switch:focus-visible { outline: 2px solid var(--moss-deep); outline-offset: 2px; }
 .dna-trigger { display: grid; gap: 2px; min-height: 34px; padding: 5px 13px; border: 1px solid var(--line); border-radius: 999px; background: rgba(244,243,236,.5); text-align: left; cursor: pointer; }
 .dna-trigger small { color: var(--ink-soft); font: 7px var(--font-geist-mono), monospace; letter-spacing: .13em; }
 .dna-trigger strong { color: var(--moss-deep); font: 550 9px var(--font-geist-mono), monospace; letter-spacing: .08em; }
@@ -262,6 +265,7 @@ button { -webkit-tap-highlight-color: transparent; }
   .skin-picker { position: relative; inset: auto; width: 100%; max-height: min(82vh, 760px); padding: 25px 18px 22px; border-radius: 20px 20px 0 0; }
   .skin-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dna-trigger { padding-inline: 9px; }.mutation-token-indicator { display: none; }.atp-indicator { padding-inline: 8px; }.atp-indicator span:last-child { display: none; }
+  .language-switch { min-width: 38px; padding-inline: 8px; }
   .desktop-pet-trigger { padding-inline: 9px; font-size: 8px; }
   .plan-backdrop, .mutation-backdrop { align-items: end; padding: 0; }.plan-panel, .mutation-panel { width: 100%; max-height: 88vh; padding: 29px 18px 24px; border-radius: 20px 20px 0 0; }.plan-task { grid-template-columns: 25px minmax(0,1fr) 84px; }.plan-task__actions { grid-column: 2 / -1; }.plan-task__bio { grid-template-columns: 1fr 1fr; }.plan-task__bio .plan-task__subtasks { grid-column: 1 / -1; }.mutation-options { grid-template-columns: 1fr; }.mutation-options button { min-height: 88px; }.mutation-form { grid-template-columns: 1fr; }
 }
