@@ -1,100 +1,128 @@
-# vinext-starter
+# 细胞 CELL
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+> 以“细胞分裂”为核心交互隐喻的个人事务管理程序。<br>
+> A personal task manager built around cell division as its central interaction metaphor.
 
-## Prerequisites
+[中文](#中文) · [English](#english) · [在线站点 / Live Site](https://cell-lineage.lzw53155228.chatgpt.site/) · [中文作品展示 / Chinese Case Study](public/showcase.html)
 
-- Node.js `>=22.13.0`
+![细胞 CELL](public/og-dna.png)
 
-## Quick Start
+## 中文
+
+### 产品理念
+
+细胞不是传统的 Todo List。你在前一天把明日计划写成“基因”，第二天这些基因会成为可执行的今日细胞。完成当前细胞后，下一组承诺才会通过分裂显现。
+
+这个模型把任务从静态清单变成一个有生命周期的系统：规划、形成、生长、突变、分裂与成熟。
+
+### 核心功能
+
+- **前一天规划**：为明天录入事项、权重、预计时间、精力与子事项，并封存为明日基因。
+- **当天执行**：封存的基因按顺序释放，每一代最多形成两个任务细胞。
+- **细胞分裂**：只有当前一代全部解决后，中心体才会激活并释放下一代。
+- **功能性细胞器**：细胞核承载当前事项，线粒体负责计时，核糖体对应子事项，溶酶体负责突变。
+- **可控突变**：支持明日债务、事项交换和突变机会，并限制每周可用次数。
+- **能量系统**：完成真实承诺会积累能量，部分重新协商行为会消耗能量。
+- **细胞皮肤**：提供原生、凝胶、培养皿、卵黄、水墨和苔藓六种皮肤，以及随机模式。
+- **细胞谱系**：保留每一代细胞的生长轨迹、状态和皮肤。
+- **桌面细胞**：支持浏览器画中画悬浮窗口；不支持时使用可拖动的页面内桌面宠物。
+- **本地保存**：计划、执行状态和偏好保存在当前浏览器中。
+
+### 本地运行
+
+环境要求：Node.js `>=22.13.0`
 
 ```bash
 npm install
 npm run dev
+```
+
+打开 [http://localhost:3000](http://localhost:3000)。
+
+### 验证与构建
+
+```bash
+npm run lint
+npm test
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+### 技术栈
 
-## Included Shape
+- React 19 + TypeScript
+- vinext + Vite
+- Cloudflare Workers / OpenAI Sites
+- CSS 动画与响应式布局
+- 浏览器 Local Storage
+- Document Picture-in-Picture API（支持时启用）
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+### 数据说明
 
-## Workspace Auth Headers
+当前版本使用浏览器本地存储，不需要注册账号或连接数据库。清除站点数据会同时清除本地计划与细胞谱系。
 
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
+在线站点目前采用私有访问设置。
 
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
+用于作品集和秋招介绍的独立中文展示页位于 [`public/showcase.html`](public/showcase.html)，可直接在浏览器中打开并打印为 PDF。
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+---
 
-Treat the full name as optional and fall back to email when it is absent:
+## English
 
-```tsx
-import { headers } from "next/headers";
+### Product idea
 
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
+CELL is not a traditional todo list. You encode tomorrow's plan as “DNA” the day before. On the target day, that DNA becomes executable cells. The next commitments only emerge through division after the current cells are resolved.
 
-  const displayName = fullName ?? email;
-  // ...
-}
+The model turns a static checklist into a living cycle of planning, formation, growth, mutation, division, and maturity.
+
+### Core features
+
+- **Plan the day before**: define tomorrow's tasks, weight, estimated time, energy, and subtasks, then seal them as DNA.
+- **Execute today**: sealed DNA is released in order, forming up to two task cells per generation.
+- **Cell division**: the centrosome activates and releases the next generation only after every cell in the current generation is resolved.
+- **Functional organelles**: the nucleus holds the commitment, mitochondria manage time, ribosomes represent subtasks, and the lysosome controls mutation.
+- **Controlled mutation**: use tomorrow debt, task exchange, or a mutation token under a weekly limit.
+- **Energy system**: completing real commitments builds energy, while selected renegotiation actions consume it.
+- **Cell skins**: choose Cell, Jelly, Petri, Yolk, Ink, Moss, or a random skin for future generations.
+- **Cell lineage**: preserve each generation's growth trail, state, and appearance.
+- **Desktop cell**: open the active cell in a browser Picture-in-Picture window, with a draggable in-page companion as fallback.
+- **Local persistence**: plans, execution state, and preferences stay in the current browser.
+
+### Run locally
+
+Requirement: Node.js `>=22.13.0`
+
+```bash
+npm install
+npm run dev
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+Open [http://localhost:3000](http://localhost:3000).
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+### Validate and build
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+```bash
+npm run lint
+npm test
+npm run build
+```
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+### Tech stack
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+- React 19 + TypeScript
+- vinext + Vite
+- Cloudflare Workers / OpenAI Sites
+- CSS animation and responsive layout
+- Browser Local Storage
+- Document Picture-in-Picture API when supported
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+### Data and privacy
 
-## Useful Commands
+The current version stores data locally in the browser and does not require an account or database connection. Clearing site data also removes local plans and cell lineage history.
 
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+The hosted site currently uses private access.
 
-## Learn More
+The standalone Chinese portfolio case study is available at [`public/showcase.html`](public/showcase.html) and is optimized for browser viewing and PDF printing.
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+## License
+
+No open-source license has been declared yet. All rights are reserved by the repository owner.
