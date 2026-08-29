@@ -20,5 +20,5 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "../app/domain", "../app/hooks/useCellStore.ts"]
+  "include": ["src/main.tsx", "src/DesktopApp.tsx", "src/env.d.ts", "../app/domain", "../app/hooks/useCellStore.ts"]
 }

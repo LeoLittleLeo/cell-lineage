@@ -4,8 +4,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const compactSize = { width: 340, height: 370 };
-const expandedSize = { width: 650, height: 720 };
+const compactSize = { width: 410, height: 430 };
+const expandedSize = { width: 720, height: 720 };
+const divisionSize = { width: 570, height: 430 };
 let cellWindow;
 let tray;
 let clickThrough = false;
@@ -96,7 +97,7 @@ app.on("before-quit", () => { quitting = true; saveBounds(); });
 
 ipcMain.handle("desktop:set-mode", (_event, mode) => {
   if (!cellWindow) return;
-  const next = mode === "expanded" ? expandedSize : compactSize;
+  const next = mode === "expanded" ? expandedSize : mode === "division" ? divisionSize : compactSize;
   const [x, y] = cellWindow.getPosition();
   const [width] = cellWindow.getSize();
   const area = screen.getDisplayMatching(cellWindow.getBounds()).workArea;

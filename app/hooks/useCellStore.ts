@@ -49,6 +49,15 @@ export function useCellStore() {
       days: current.days.map((item) => item.date === current.currentDate && item.generations.length === 0 ? { ...item, skinId: previewSkinId } : item),
     };
   }), []);
+  const setCurrentCellSkin = useCallback((cellId: string, skinId: CellSkinId) => setState((current) => updateToday(current, (activeDay) => ({
+    ...activeDay,
+    skinId,
+    generations: activeDay.generations.map((generation) => ({
+      ...generation,
+      skinId: generation.cells.some((cell) => cell.id === cellId) ? skinId : generation.skinId,
+      cells: generation.cells.map((cell) => cell.id === cellId ? { ...cell, skinId } : cell),
+    })),
+  }))), []);
 
   const addPlanTask = useCallback((date: string, source: PlannedTask["source"] = "planned") => setState((current) => updatePlan(current, date, (plan) => addTaskToPlan(plan, source))), []);
   const editPlanTask = useCallback((date: string, taskId: string, patch: { title?: string; weight?: TaskWeight; estimatedMinutes?: number; energy?: 1 | 2 | 3 | 4 | 5; subtasks?: SubTask[] }) => setState((current) => updatePlan(current, date, (plan) => updatePlanTask(plan, taskId, patch))), []);
@@ -105,7 +114,7 @@ export function useCellStore() {
     state, day, latest, hydrated, atp: atpBalance(day), selectedSkinId: state.preferences.selectedSkinId,
     tomorrowDate, tomorrowPlan, todayPlan, mutationTokens: mutationTokensRemaining(state),
     remainingQueued: queuedTasks(day).length, resolvedTasks: resolvedTaskCount(day), totalTasks: day.queue.length,
-    divide, setSkin, addPlanTask, editPlanTask, removePlanTask, reorderPlanTask, sealDailyPlan,
+    divide, setSkin, setCurrentCellSkin, addPlanTask, editPlanTask, removePlanTask, reorderPlanTask, sealDailyPlan,
     updateTitle, complete, toggleTimer, toggleSubtask, exchange, mutate, canDivide: canDivide(latest),
   };
 }

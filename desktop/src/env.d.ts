@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 interface DesktopBridge {
-  setMode: (mode: "compact" | "expanded") => Promise<void>;
+  setMode: (mode: "compact" | "expanded" | "division") => Promise<void>;
   setClickThrough: (enabled: boolean) => Promise<void>;
   hide: () => Promise<void>;
   notify: (title: string, body: string) => Promise<void>;
