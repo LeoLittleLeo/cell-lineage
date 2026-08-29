@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="细胞 CELL——从写入明日基因到桌面细胞执行的交互式产品使用演示">
+  <title>细胞 CELL｜产品使用演示</title>
+  <link rel="stylesheet" href="./demo.css">
+</head>
+<body>
+  <main class="demo">
+    <header class="topbar">
+      <div class="brand-wrap"><span class="brand">细胞 CELL</span><small>PRODUCT WALKTHROUGH</small></div>
+      <div class="top-actions">
+        <span class="mode"><i></i>演示模式 · 数据不会保存</span>
+        <button class="auto" id="autoButton" type="button">自动演示</button>
+        <a class="text-link" href="./showcase.html">返回作品展示 ↗</a>
+      </div>
+    </header>
+    <div class="layout">
+      <section class="guide">
+        <div>
+          <span class="step-meta" id="stepMeta"></span>
+          <h1 id="stepTitle"></h1>
+          <p class="guide-copy" id="stepCopy"></p>
+          <p class="principle" id="principle"></p>
+        </div>
+        <div class="guide-bottom">
+          <nav class="timeline" id="timeline" aria-label="演示步骤"></nav>
+          <div class="controls"><button id="prevButton" type="button">← 上一步</button><button class="primary" id="nextButton" type="button"></button></div>
+        </div>
+      </section>
+      <section class="stage">
+        <div class="product">
+          <div class="product-head"><div class="product-dots"><i></i><i></i><i></i></div><span id="productTitle"></span><span class="product-label"><i></i><span id="productState"></span></span></div>
+          <div class="scene" id="scene"></div>
+          <div class="toast" id="toast"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="./demo.js"></script>
+</body>
+</html>
