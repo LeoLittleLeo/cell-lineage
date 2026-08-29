@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { getCellSkin, type CellSkinId } from "../domain/skins";
-import { useLanguage } from "../i18n/LanguageContext";
 
 interface PetSnapshot {
   title: string;
   minutes?: number;
-  status: string;
+  status: "等待形成" | "尚未开始" | "生长中" | "可以分裂" | "今日完成";
   skinId: CellSkinId;
 }
 
@@ -34,19 +33,18 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#243029}
 .desktop-pet-actions{position:absolute;z-index:4;left:50%;bottom:10px;display:flex;gap:6px;transform:translateX(-50%)}.desktop-pet-actions button{min-width:62px;height:27px;border:1px solid rgba(64,84,71,.28);border-radius:99px;background:rgba(245,244,237,.78);font-size:8px;cursor:pointer}.desktop-pet-actions button:last-child{background:#405448;color:#f5f3eb}
 @keyframes petBreathe{50%{transform:scale(1.025) rotate(.5deg)}}`;
 
-function PetBody({ snapshot, onClose, onComplete, onTimer, isZh }: Props & { onClose: () => void; isZh: boolean }) {
+function PetBody({ snapshot, onClose, onComplete, onTimer }: Props & { onClose: () => void }) {
   return <div className="desktop-pet-card">
     <span className="desktop-pet-state">{snapshot.status}</span>
-    <button className="desktop-pet-close" type="button" onClick={onClose} aria-label={isZh ? "关闭桌面细胞" : "Close desktop cell"}>×</button>
+    <button className="desktop-pet-close" type="button" onClick={onClose} aria-label="关闭桌面细胞">×</button>
     <div className="desktop-pet-cell" data-skin={snapshot.skinId} style={getCellSkin(snapshot.skinId).variables as CSSProperties}>
-      <div className="desktop-pet-nucleus"><strong>{snapshot.title}</strong>{snapshot.minutes !== undefined && <small>{snapshot.minutes} {isZh ? "分钟" : "MIN"}</small>}</div>
+      <div className="desktop-pet-nucleus"><strong>{snapshot.title}</strong>{snapshot.minutes !== undefined && <small>{snapshot.minutes} 分钟</small>}</div>
     </div>
-    {(onTimer || onComplete) && <div className="desktop-pet-actions">{onTimer && <button type="button" onClick={onTimer}>{isZh ? "计时" : "TIMER"}</button>}{onComplete && <button type="button" onClick={onComplete}>{isZh ? "完成" : "DONE"}</button>}</div>}
+    {(onTimer || onComplete) && <div className="desktop-pet-actions">{onTimer && <button type="button" onClick={onTimer}>计时</button>}{onComplete && <button type="button" onClick={onComplete}>完成</button>}</div>}
   </div>;
 }
 
 export function DesktopPet({ snapshot, onComplete, onTimer }: Props) {
-  const { isZh } = useLanguage();
   const [fallbackOpen, setFallbackOpen] = useState(true);
   const [position, setPosition] = useState({ x: 24, y: 92 });
   const pipWindow = useRef<Window | null>(null);
@@ -55,7 +53,7 @@ export function DesktopPet({ snapshot, onComplete, onTimer }: Props) {
 
   const closePip = () => { pipRoot.current?.unmount(); pipRoot.current = null; pipWindow.current?.close(); pipWindow.current = null; };
 
-  const renderPip = () => pipRoot.current?.render(<PetBody snapshot={snapshot} onComplete={onComplete} onTimer={onTimer} onClose={closePip} isZh={isZh} />);
+  const renderPip = () => pipRoot.current?.render(<PetBody snapshot={snapshot} onComplete={onComplete} onTimer={onTimer} onClose={closePip} />);
 
   useEffect(() => { renderPip(); });
   useEffect(() => () => closePip(), []);
@@ -67,7 +65,7 @@ export function DesktopPet({ snapshot, onComplete, onTimer }: Props) {
     try {
       const petWindow = await controller.requestWindow({ width: 230, height: 240 });
       setFallbackOpen(false);
-      petWindow.document.title = isZh ? "桌面细胞" : "Desktop Cell";
+      petWindow.document.title = "桌面细胞";
       const style = petWindow.document.createElement("style"); style.textContent = PET_CSS; petWindow.document.head.append(style);
       const rootNode = petWindow.document.createElement("div"); rootNode.id = "desktop-pet-root"; petWindow.document.body.append(rootNode);
       pipWindow.current = petWindow; pipRoot.current = createRoot(rootNode); renderPip();
@@ -86,9 +84,9 @@ export function DesktopPet({ snapshot, onComplete, onTimer }: Props) {
   };
 
   return <>
-    <button className="desktop-pet-trigger" type="button" onClick={launch}>{isZh ? "桌面细胞" : "DESKTOP CELL"}</button>
+    <button className="desktop-pet-trigger" type="button" onClick={launch}>桌面细胞</button>
     {fallbackOpen && <div className="desktop-pet-fallback" style={{ right: position.x, top: position.y }} onPointerDown={beginDrag} onPointerMove={moveDrag} onPointerUp={() => { drag.current = null; }}>
-      <PetBody snapshot={snapshot} onComplete={onComplete} onTimer={onTimer} onClose={() => setFallbackOpen(false)} isZh={isZh} />
+      <PetBody snapshot={snapshot} onComplete={onComplete} onTimer={onTimer} onClose={() => setFallbackOpen(false)} />
     </div>}
   </>;
 }
